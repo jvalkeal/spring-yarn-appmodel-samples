@@ -44,15 +44,15 @@ public class ClientApplication {
 
 		// run actual app based on given operation
 		try {
-			if (Operation.INSTALL.equals(operation)) {
-				InstallOptions options = new InstallOptions();
+			if (Operation.PUSH.equals(operation)) {
+				PushOptions options = new PushOptions();
 				parser = new CmdLineParser(options);
 				parser.parseArgument(appArgs);
 				if (options.help) {
 					parser.printUsage(System.out);
 				}
 				else {
-					doInstall(options, appArgs);
+					doPush(options, appArgs);
 				}
 			}
 			else if (Operation.SUBMIT.equals(operation)) {
@@ -88,15 +88,15 @@ public class ClientApplication {
 					doListSubmitted(options, appArgs);
 				}
 			}
-			else if (Operation.LISTINSTALLED.equals(operation)) {
-				ListInstalledOptions options = new ListInstalledOptions();
+			else if (Operation.LISTPUSHED.equals(operation)) {
+				ListPushedOptions options = new ListPushedOptions();
 				parser = new CmdLineParser(options);
 				parser.parseArgument(appArgs);
 				if (options.help) {
 					parser.printUsage(System.out);
 				}
 				else {
-					doListInstalled(appArgs);
+					doListPushed(appArgs);
 				}
 			}
 			else {
@@ -122,21 +122,21 @@ public class ClientApplication {
 		}
 	}
 
-	private void doInstall(InstallOptions options, List<String> appArgs) {
+	private void doPush(PushOptions options, List<String> appArgs) {
 		YarnPushApplication app = new YarnPushApplication();
-		app.applicationVersion(options.instanceId);
+		app.applicationVersion(options.applicationVersion);
 
 		Properties instanceProperties = new Properties();
-		instanceProperties.setProperty("spring.yarn.applicationId", options.instanceId);
+		instanceProperties.setProperty("spring.yarn.applicationVersion", options.applicationVersion);
 		app.configFile("application.properties", instanceProperties);
 
 		app.run(appArgs.toArray(new String[0]));
-		System.out.println("New instance " + options.instanceId + " installed");
+		System.out.println("New instance " + options.applicationVersion + " installed");
 	}
 
 	private void doSubmit(SubmitOptions options, List<String> appArgs) {
 		YarnSubmitApplication app = new YarnSubmitApplication();
-		app.applicationVersion(options.instanceId);
+		app.applicationVersion(options.applicationVersion);
 		ApplicationId applicationId = app.run(appArgs.toArray(new String[0]));
 		System.out.println("New instance submitted with id " + applicationId);
 	}
@@ -152,11 +152,11 @@ public class ClientApplication {
 		System.out.println(info);
 	}
 
-	private void doListInstalled(List<String> appArgs) {
+	private void doListPushed(List<String> appArgs) {
 		YarnInfoApplication app = new YarnInfoApplication();
 
 		Properties appProperties = new Properties();
-		appProperties.setProperty("spring.yarn.internal.YarnInfoApplication.operation", "INSTALLED");
+		appProperties.setProperty("spring.yarn.internal.YarnInfoApplication.operation", "PUSHED");
 		app.appProperties(appProperties);
 
 		String info = app.run(appArgs.toArray(new String[0]));
@@ -187,13 +187,13 @@ public class ClientApplication {
 		new ClientApplication().doMain(args);
 	}
 
-	private static class InstallOptions {
+	private static class PushOptions {
 
 		@Option(name = "-h", aliases = { "--help" }, usage = "Print this help")
 		private boolean help;
 
-		@Option(name = "-i", aliases = { "--instance-id" }, usage = "Instance id of the application, defaults to 'app'")
-		private String instanceId = "app";
+		@Option(name = "-a", aliases = { "--application-version" }, usage = "Application version of the application, defaults to 'app'")
+		private String applicationVersion = "app";
 	}
 
 	private static class SubmitOptions {
@@ -201,8 +201,8 @@ public class ClientApplication {
 		@Option(name = "-h", aliases = { "--help" }, usage = "Print this help")
 		private boolean help;
 
-		@Option(name = "-i", aliases = { "--instance-id" }, usage = "Instance id of the application, defaults to 'app'")
-		private String instanceId = "app";
+		@Option(name = "-a", aliases = { "--application-version" }, usage = "Application version of the application, defaults to 'app'")
+		private String applicationVersion = "app";
 	}
 
 	private static class KillOptions {
@@ -226,17 +226,17 @@ public class ClientApplication {
 		private String type;
 	}
 
-	private static class ListInstalledOptions {
+	private static class ListPushedOptions {
 
 		@Option(name = "-h", aliases = { "--help" }, usage = "Print this help")
 		private boolean help;
 	}
 
 	private enum Operation {
-		INSTALL,
+		PUSH,
 		SUBMIT,
 		KILL,
-		LISTINSTALLED,
+		LISTPUSHED,
 		LISTSUBMITTED
 	}
 

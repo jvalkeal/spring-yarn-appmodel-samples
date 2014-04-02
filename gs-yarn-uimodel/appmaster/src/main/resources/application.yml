@@ -1,0 +1,18 @@
+server:
+    port: 0
+spring:
+    hadoop:
+        fsUri: hdfs://node1:8020
+        resourceManagerHost: node1
+    yarn:
+        appType: GS
+        appName: gs-yarn-uimodel
+        applicationBaseDir: /app/
+        applicationDir: /app/gs-yarn-uimodel/
+        appmaster:
+            appmasterClass: hello.appmaster.GridAppmaster
+            containerCount: 1
+            keepContextAlive: true
+            launchcontext:
+                locality: true
+                archiveFile: gs-yarn-uimodel-container-0.1.0.jar

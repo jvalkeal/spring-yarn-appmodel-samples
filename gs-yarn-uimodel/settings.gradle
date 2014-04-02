@@ -1,0 +1,3 @@
+rootProject.name = 'gs-yarn-uimodel'
+
+include 'client','appmaster','container'

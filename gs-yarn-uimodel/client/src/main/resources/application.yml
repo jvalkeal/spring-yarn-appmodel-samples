@@ -1,0 +1,18 @@
+spring:
+    main:
+        show_banner: false
+    hadoop:
+        fsUri: hdfs://node1:8020
+        resourceManagerHost: node1
+    yarn:
+        appType: GS
+        appName: gs-yarn-uimodel
+        applicationBaseDir: /app/
+        applicationDir: /app/gs-yarn-uimodel/
+        client:
+            clientClass: org.springframework.yarn.client.DefaultApplicationYarnClient
+            files:
+              - "file:build/libs/gs-yarn-uimodel-container-0.1.0.jar"
+              - "file:build/libs/gs-yarn-uimodel-appmaster-0.1.0.jar"
+            launchcontext:
+                archiveFile: gs-yarn-uimodel-appmaster-0.1.0.jar

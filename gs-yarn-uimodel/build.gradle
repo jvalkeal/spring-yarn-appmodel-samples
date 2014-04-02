@@ -1,0 +1,88 @@
+buildscript {
+    repositories {
+        maven { url "http://repo.spring.io/libs-milestone" }
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.0.0.RELEASE")
+    }
+}
+
+configure(rootProject) {
+    task clean {
+        doLast {
+            ant.delete(dir: "build")
+        }
+    }
+}
+
+subprojects { subproject ->
+    apply plugin: 'java'
+    apply plugin: 'eclipse'
+    apply plugin: 'idea'
+    apply plugin: 'spring-boot'
+    version =  '0.1.0'
+
+    sourceCompatibility = 1.6
+    targetCompatibility = 1.6
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven { url "http://repo.spring.io/libs-milestone" }
+    }
+
+    dependencies {
+        compile("org.springframework.data:spring-yarn-boot:2.0.0.BUILD-SNAPSHOT")
+    }
+
+    jar {
+        baseName = 'gs-yarn-uimodel'
+    }
+
+    task copyJars(type: Copy) {
+        from "$buildDir/libs"
+        into "$rootDir/build/libs"
+        include "**/*.jar"
+    }
+    build.doLast {
+        copyJars.execute()
+    }
+
+}
+
+project('client') {
+    eclipse.project.name = 'gs-yarn-uimodel-client'
+    dependencies {
+        compile("args4j:args4j:2.0.16")
+    }
+    jar {
+        appendix = 'client'
+    }
+}
+
+project('appmaster') {
+    eclipse.project.name = 'gs-yarn-uimodel-appmaster'
+    dependencies {
+        compile("org.springframework.boot:spring-boot-starter-web:1.0.0.RELEASE") {
+            exclude group:'ch.qos.logback'
+        }
+        compile("org.springframework.boot:spring-boot-starter-actuator:1.0.0.RELEASE") {
+            exclude group:'ch.qos.logback'
+        }
+    }
+    jar {
+        appendix = 'appmaster'
+    }
+}
+
+project('container') {
+    eclipse.project.name = 'gs-yarn-uimodel-container'
+    jar {
+        appendix = 'container'
+    }
+}
+
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.11'
+}

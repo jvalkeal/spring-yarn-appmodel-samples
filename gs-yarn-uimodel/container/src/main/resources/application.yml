@@ -1,0 +1,9 @@
+spring:
+    hadoop:
+        fsUri: hdfs://node1:8020
+        resourceManagerHost: node1
+    yarn:
+        appType: GS
+        appName: gs-yarn-uimodel
+        applicationBaseDir: /app/
+        applicationDir: /app/gs-yarn-uimodel/
