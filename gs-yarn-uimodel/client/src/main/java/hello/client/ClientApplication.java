@@ -77,8 +77,8 @@ public class ClientApplication {
 					doKill(options, appArgs);
 				}
 			}
-			else if (Operation.LISTSUBMITTED.equals(operation)) {
-				ListSubmittedOptions options = new ListSubmittedOptions();
+			else if (Operation.SUBMITTED.equals(operation)) {
+				SubmittedOptions options = new SubmittedOptions();
 				parser = new CmdLineParser(options);
 				parser.parseArgument(appArgs);
 				if (options.help) {
@@ -88,8 +88,8 @@ public class ClientApplication {
 					doListSubmitted(options, appArgs);
 				}
 			}
-			else if (Operation.LISTPUSHED.equals(operation)) {
-				ListPushedOptions options = new ListPushedOptions();
+			else if (Operation.PUSHED.equals(operation)) {
+				PushedOptions options = new PushedOptions();
 				parser = new CmdLineParser(options);
 				parser.parseArgument(appArgs);
 				if (options.help) {
@@ -163,7 +163,7 @@ public class ClientApplication {
 		System.out.println(info);
 	}
 
-	private void doListSubmitted(ListSubmittedOptions options, List<String> appArgs) {
+	private void doListSubmitted(SubmittedOptions options, List<String> appArgs) {
 		YarnInfoApplication app = new YarnInfoApplication();
 
 		Properties appProperties = new Properties();
@@ -214,7 +214,7 @@ public class ClientApplication {
 		private String applicationId;
 	}
 
-	private static class ListSubmittedOptions {
+	private static class SubmittedOptions {
 
 		@Option(name = "-h", aliases = { "--help" }, usage = "Print this help")
 		private boolean help;
@@ -226,7 +226,7 @@ public class ClientApplication {
 		private String type;
 	}
 
-	private static class ListPushedOptions {
+	private static class PushedOptions {
 
 		@Option(name = "-h", aliases = { "--help" }, usage = "Print this help")
 		private boolean help;
@@ -236,8 +236,8 @@ public class ClientApplication {
 		PUSH,
 		SUBMIT,
 		KILL,
-		LISTPUSHED,
-		LISTSUBMITTED
+		PUSHED,
+		SUBMITTED
 	}
 
 }

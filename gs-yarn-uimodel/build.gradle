@@ -26,9 +26,9 @@ subprojects { subproject ->
     targetCompatibility = 1.6
 
     repositories {
-        mavenLocal()
         mavenCentral()
         maven { url "http://repo.spring.io/libs-milestone" }
+        mavenLocal()
     }
 
     dependencies {
@@ -69,6 +69,8 @@ project('appmaster') {
         compile("org.springframework.boot:spring-boot-starter-actuator:1.0.0.RELEASE") {
             exclude group:'ch.qos.logback'
         }
+        compile("com.fasterxml.jackson.core:jackson-databind")
+        compile("org.springframework.hateoas:spring-hateoas:0.8.0.RELEASE")
     }
     jar {
         appendix = 'appmaster'

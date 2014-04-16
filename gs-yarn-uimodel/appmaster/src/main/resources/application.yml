@@ -10,9 +10,9 @@ spring:
         applicationBaseDir: /app/
         applicationDir: /app/gs-yarn-uimodel/
         appmaster:
-            appmasterClass: hello.appmaster.GridAppmaster
+            appmasterClass: hello.appmaster.am.cluster.ManagedClustersAppmaster
             containerCount: 1
             keepContextAlive: true
             launchcontext:
-                locality: true
+                locality: false
                 archiveFile: gs-yarn-uimodel-container-0.1.0.jar
