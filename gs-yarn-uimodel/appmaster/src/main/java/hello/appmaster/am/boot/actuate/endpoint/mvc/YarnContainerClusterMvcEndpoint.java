@@ -84,13 +84,13 @@ public class YarnContainerClusterMvcEndpoint extends EndpointMvcAdapter {
 		return new ResponseEntity<ClusterStateResponse>(new ClusterStateResponse(cluster), HttpStatus.OK);
 	}
 
-	@RequestMapping(value = "/{clusterId}/start", method = RequestMethod.GET)
+	@RequestMapping(value = "/{clusterId}/start", method = RequestMethod.POST)
 	public HttpEntity<String> start(@PathVariable("clusterId") String clusterId) {
 		delegate.startCluster(clusterId);
 		return new ResponseEntity<String>("start ok", HttpStatus.OK);
 	}
 
-	@RequestMapping(value = "/{clusterId}/stop", method = RequestMethod.GET)
+	@RequestMapping(value = "/{clusterId}/stop", method = RequestMethod.POST)
 	public HttpEntity<String> stop(@PathVariable("clusterId") String clusterId) {
 		delegate.stopCluster(clusterId);
 		return new ResponseEntity<String>("stop ok", HttpStatus.OK);

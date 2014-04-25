@@ -5,6 +5,7 @@ import hello.appmaster.am.grid.GridMember;
 import hello.appmaster.am.grid.GridProjection;
 import hello.appmaster.am.grid.ProjectedGrid;
 import hello.appmaster.am.grid.listener.DefaultProjectedGridListener;
+import hello.appmaster.am.grid.listener.GridListener;
 import hello.appmaster.am.grid.listener.ProjectedGridListener;
 
 import java.util.Collection;
@@ -37,6 +38,7 @@ public abstract class AbstractProjectedGrid implements ProjectedGrid {
 		Assert.notNull(grid, "Grid must not be null");
 		this.grid = grid;
 		this.grid.addInterceptor(new ProjectionAcceptInterceptor());
+		this.grid.addGridListener(new ProjectionHandlingGridListener());
 	}
 
 	@Override
@@ -120,6 +122,21 @@ public abstract class AbstractProjectedGrid implements ProjectedGrid {
 				}
 			}
 			return null;
+		}
+
+	}
+
+	private class ProjectionHandlingGridListener implements GridListener {
+
+		@Override
+		public void memberAdded(GridMember member) {
+		}
+
+		@Override
+		public void memberRemoved(GridMember member) {
+			for (GridProjection projection : projections) {
+				projection.removeMember(member);
+			}
 		}
 
 	}

@@ -102,14 +102,14 @@ public class YarnContainerClusterMvcEndpointTests {
 			andExpect(status().isOk()).
 			andExpect(content().string(containsString("foo")));
 		mvc.
-			perform(get(BASE + "/foo/start")).
+			perform(post(BASE + "/foo/start")).
 			andExpect(status().isOk()).
 			andExpect(content().string(containsString("start ok")));
 
 		Map<String, ContainerCluster> clusters = TestUtils.readField("clusters", appmaster);
 		assertThat(clusters.size(), is(1));
 		assertThat(clusters.containsKey("foo"), is(true));
-		assertThat(clusters.get("foo").getContainerClusterState().getState(), is(ContainerClusterState.State.STARTING));
+		assertThat(clusters.get("foo").getContainerClusterState().getState(), is(ContainerClusterState.State.ALLOCATING));
 	}
 
 	@Import({ EndpointWebMvcAutoConfiguration.class, ManagementServerPropertiesAutoConfiguration.class })

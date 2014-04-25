@@ -1,5 +1,7 @@
 package hello.appmaster.am.cluster;
 
+import hello.appmaster.am.cluster.ContainerClusterState.Event;
+import hello.appmaster.am.cluster.ContainerClusterState.State;
 import hello.appmaster.am.grid.Grid;
 import hello.appmaster.am.grid.GridMember;
 import hello.appmaster.am.grid.GridProjection;
@@ -57,7 +59,8 @@ public abstract class AbstractContainerClusterAppmaster extends AbstractEventing
 
 	private ClusterTaskPoller clusterTaskPoller;
 
-	private boolean autoStartClusters;
+	/** Flag to autostart cluster after create */
+	private boolean autoStartCluster;
 
 	@Override
 	protected void onInit() throws Exception {
@@ -71,7 +74,7 @@ public abstract class AbstractContainerClusterAppmaster extends AbstractEventing
 	@Override
 	protected void doStart() {
 		super.doStart();
-		if (autoStartClusters && !clusters.isEmpty()) {
+		if (autoStartCluster && !clusters.isEmpty()) {
 			for (String id : clusters.keySet()) {
 				startContainerCluster(id);
 			}
@@ -141,7 +144,7 @@ public abstract class AbstractContainerClusterAppmaster extends AbstractEventing
 	public void createContainerCluster(ContainerCluster cluster) {
 		clusters.put(cluster.getId(), cluster);
 		projectedGrid.addProjection(cluster.getGridProjection());
-		if (autoStartClusters) {
+		if (autoStartCluster) {
 			startContainerCluster(cluster.getId());
 		}
 	}
@@ -150,7 +153,7 @@ public abstract class AbstractContainerClusterAppmaster extends AbstractEventing
 	public void startContainerCluster(String id) {
 		ContainerCluster cluster = clusters.get(id);
 		if (cluster != null) {
-			cluster.getContainerClusterState().setStarting();
+			cluster.getContainerClusterState().command(Event.CONFIGURE);
 		}
 	}
 
@@ -158,17 +161,17 @@ public abstract class AbstractContainerClusterAppmaster extends AbstractEventing
 	public void stopContainerCluster(String id) {
 		ContainerCluster cluster = clusters.get(id);
 		if (cluster != null) {
-			cluster.getContainerClusterState().setStopping();
+			cluster.getContainerClusterState().command(Event.STOP);
 		}
 	}
 
 	@Override
 	public void modifyContainerCluster(String id, ProjectionData data) {
 		ContainerCluster cluster = clusters.get(id);
-		if (cluster.getContainerClusterState().isStarted()) {
+		if (cluster.getContainerClusterState().getState().equals(State.RUNNING)) {
 			GridProjection gridProjection = cluster.getGridProjection();
 			gridProjection.setProjectionData(data);
-			cluster.getContainerClusterState().setStarting();
+			cluster.getContainerClusterState().command(Event.CONFIGURE);
 		}
 	}
 
@@ -176,8 +179,8 @@ public abstract class AbstractContainerClusterAppmaster extends AbstractEventing
 		this.clusters.putAll(initialClusters);
 	}
 
-	public void setAutoStartClusters(boolean autoStartClusters) {
-		this.autoStartClusters = autoStartClusters;
+	public void setAutoStartCluster(boolean autoStartCluster) {
+		this.autoStartCluster = autoStartCluster;
 	}
 
 	protected abstract Grid doCreateGrid();
@@ -207,13 +210,11 @@ public abstract class AbstractContainerClusterAppmaster extends AbstractEventing
 	 */
 	private void doTask() {
 		for (Entry<ContainerCluster, SatisfyStateData> data : getSatisfyStateData().entrySet()) {
-			if (data.getKey().getContainerClusterState().isStarting()) {
-				data.getKey().getContainerClusterState().setStarted();
-			}
+
 			doAllocation(data.getValue());
 
-			if (data.getKey().getContainerClusterState().isStopping()) {
-				data.getKey().getContainerClusterState().setStopped();
+			if (data.getKey().getContainerClusterState().getState().equals(State.STOPPING)) {
+				data.getKey().getContainerClusterState().command(Event.END);
 				SatisfyStateData sdata = new SatisfyStateData(new ArrayList<GridMember>(data.getKey().getGridProjection().getMembers()), null);
 				doKill(sdata);
 			} else {
@@ -239,8 +240,9 @@ public abstract class AbstractContainerClusterAppmaster extends AbstractEventing
 	private Map<ContainerCluster, SatisfyStateData> getSatisfyStateData() {
 		Map<ContainerCluster, SatisfyStateData> data = new HashMap<ContainerCluster, SatisfyStateData>();
 		for (Entry<String, ContainerCluster> entry : clusters.entrySet()) {
-			if (entry.getValue().getContainerClusterState().isStarting()) {
+			if (entry.getValue().getContainerClusterState().getState().equals(State.ALLOCATING)) {
 				data.put(entry.getValue(), entry.getValue().getGridProjection().getSatisfyState());
+				entry.getValue().getContainerClusterState().command(Event.CONTINUE);
 			} else {
 				data.put(entry.getValue(), null);
 			}

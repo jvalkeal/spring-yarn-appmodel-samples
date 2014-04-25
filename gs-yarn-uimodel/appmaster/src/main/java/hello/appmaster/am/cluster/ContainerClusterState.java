@@ -1,64 +1,72 @@
 package hello.appmaster.am.cluster;
 
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
- * Simple state engine.
+ * Simple state machine.
  *
  * @author Janne Valkealahti
  *
  */
 public class ContainerClusterState {
 
-	private State state = State.INITIAL;
+	private volatile State currentState = State.INITIAL;
+
+	private static Map<State, EnumSet<State>> stateTransitionMap;
+
+	static {
+		stateTransitionMap = new HashMap<State, EnumSet<State>>();
+		stateTransitionMap.put(State.INITIAL, EnumSet.of(State.RUNNING, State.ALLOCATING));
+		stateTransitionMap.put(State.ALLOCATING, EnumSet.of(State.RUNNING));
+		stateTransitionMap.put(State.RUNNING, EnumSet.of(State.ALLOCATING, State.STOPPING));
+		stateTransitionMap.put(State.STOPPING, EnumSet.of(State.STOPPED));
+	}
+
+	public void command(String command) {
+		Event event = Event.valueOf(Event.class, command.toUpperCase());
+		command(event);
+	}
+
+	public void command(Event event) {
+		switch (event) {
+		case START:
+			setCurrent(State.RUNNING);
+			break;
+		case CONFIGURE:
+			setCurrent(State.ALLOCATING);
+			break;
+		case CONTINUE:
+			setCurrent(State.RUNNING);
+			break;
+		case STOP:
+			setCurrent(State.STOPPING);
+			break;
+		case END:
+			setCurrent(State.STOPPED);
+			break;
+		default:
+			break;
+		}
+	}
 
 	public State getState() {
-		return state;
+		return currentState;
 	}
 
-	public void setState(State state) {
-		this.state = state;
-	}
-
-	public void setStarting() {
-		if (state.equals(State.INITIAL) || state.equals(State.STARTING) || state.equals(State.STARTED)) {
-			state = State.STARTING;
-		} else {
-			throw getException(state, State.STARTING);
+	private State setCurrent(State desiredState) {
+		if (!isReachable(desiredState)) {
+			throw getException(currentState, desiredState);
 		}
+		return currentState = desiredState;
 	}
 
-	public boolean isStarting() {
-		return state.equals(State.STARTING);
-	}
-
-	public void setStarted() {
-		if (state.equals(State.STARTING) || state.equals(State.STARTED)) {
-			state = State.STARTED;
+	private boolean isReachable(State desiredState) {
+		if (desiredState == currentState) {
+			return true;
 		} else {
-			throw getException(state, State.STARTED);
-		}
-	}
-
-	public boolean isStarted() {
-		return state.equals(State.STARTED);
-	}
-
-	public void setStopping() {
-		if (state.equals(State.STARTING) || state.equals(State.STARTED) || state.equals(State.STOPPING)) {
-			state = State.STOPPING;
-		} else {
-			throw getException(state, State.STOPPING);
-		}
-	}
-
-	public boolean isStopping() {
-		return state.equals(State.STOPPING);
-	}
-
-	public void setStopped() {
-		if (state.equals(State.STOPPING) || state.equals(State.STOPPED)) {
-			state = State.STOPPED;
-		} else {
-			throw getException(state, State.STOPPED);
+			return stateTransitionMap.get(currentState).contains(desiredState);
 		}
 	}
 
@@ -66,30 +74,25 @@ public class ContainerClusterState {
 		return new IllegalStateException("Can't switch to state " + to + " from " + from);
 	}
 
-	public enum State {
+	@Override
+	public String toString() {
+		return "ContainerClusterState [getState()=" + getState() + "]";
+	}
 
-		/**
-		 * Initial state when cluster has been created but not yet started
-		 */
+	public enum State {
 		INITIAL,
-		/**
-		 * State indicating that cluster start has been requested but no
-		 * allocation requests has been made
-		 */
-		STARTING,
-		/**
-		 * State indicating that cluster has been entered into allocation mode
-		 */
-		STARTED,
-		/**
-		 * State indicating that cluster has been entered into stopping mode
-		 */
+		RUNNING,
+		ALLOCATING,
 		STOPPING,
-		/**
-		 * State indicating that cluster has been been stopped and there are no
-		 * running containers or pending allocations
-		 */
 		STOPPED
+	}
+
+	public enum Event {
+		START,
+		CONFIGURE,
+		CONTINUE,
+		STOP,
+		END
 	}
 
 }
