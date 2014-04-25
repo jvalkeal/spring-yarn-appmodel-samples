@@ -1,4 +1,4 @@
-package hello.appmaster.am.mvc;
+package hello.appmaster.am.boot.actuate.endpoint.mvc;
 
 import hello.appmaster.am.cluster.ContainerCluster;
 

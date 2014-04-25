@@ -5,7 +5,7 @@ import hello.appmaster.am.grid.GridMember;
 import java.util.Iterator;
 
 /**
- * Composite listener for handling grid container node events.
+ * Composite listener for handling grid member events.
  *
  * @author Janne Valkealahti
  *

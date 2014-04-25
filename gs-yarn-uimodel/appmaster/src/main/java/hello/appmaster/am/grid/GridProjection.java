@@ -15,75 +15,32 @@
  */
 package hello.appmaster.am.grid;
 
+import hello.appmaster.am.grid.support.ProjectionData;
+import hello.appmaster.am.grid.support.SatisfyStateData;
+
 import java.util.Collection;
 
-import org.apache.hadoop.yarn.api.records.ContainerId;
-
 /**
- * Interface representing a container group.
+ * Interface representing a grid projection.
  *
  * @author Janne Valkealahti
  *
  */
 public interface GridProjection {
 
-	/**
-	 * Gets a container group identifier.
-	 *
-	 * @return container group identifier
-	 */
-	String getId();
+	boolean acceptMember(GridMember node);
+
+	GridMember removeMember(GridMember member);
+
+	SatisfyStateData getSatisfyState();
 
 	/**
-	 * Checks if node is a member of this group.
+	 * Gets the members of this projection as {@code Collection}.
 	 *
-	 * @param id the node identifier
-	 * @return true, if node is a member of group
-	 */
-	boolean hasMember(ContainerId id);
-
-	/**
-	 * Adds the container node.
-	 * <p>
-     * If a group refuses to add a particular node for any reason
-     * other than that it already contains the node, it <i>must</i> throw
-     * an exception (rather than returning <tt>false</tt>).  This preserves
-     * the invariant that a group always contains the specified node
-     * after this call returns.
-     * <p>
-     * Implementation itself should define if a node added in a group is
-     * also added to a grid itself.
-	 *
-	 * @param node the node
-	 * @return <tt>true</tt> if this group changed as a result of the call
-	 */
-	boolean addMember(GridMember node);
-
-	/**
-	 * Removes the node from this group if it is present. Returns the {@code ContainerNode} to which
-	 * given node identifier was previously associated, or null if node wasn't a member of this group.
-     * <p>
-     * Implementation itself should define if a node removed from a group is
-     * also removed from a grid itself.
-	 *
-	 * @param id the node identifier
-	 * @return the removed container node, or <code>NULL</code> if node wasn't a member of this group.
-	 */
-	GridMember removeMember(ContainerId id);
-
-	/**
-	 * Gets the container node.
-	 *
-	 * @param id the container node id
-	 * @return the node, or <code>NULL</code> if node wasn't a member of this group.
-	 */
-	GridMember getMember(ContainerId id);
-
-	/**
-	 * Gets the members of this group as {@code Collection}.
-	 *
-	 * @return the nodes
+	 * @return the projection members
 	 */
 	Collection<GridMember> getMembers();
+
+	void setProjectionData(ProjectionData data);
 
 }

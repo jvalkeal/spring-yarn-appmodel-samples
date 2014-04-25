@@ -1,20 +1,13 @@
 package hello.appmaster.am.cluster;
 
-import java.util.List;
-
-import org.apache.hadoop.yarn.api.records.Container;
-import org.springframework.yarn.am.allocate.ContainerAllocateData;
+import hello.appmaster.am.grid.GridProjection;
 
 public interface ContainerCluster {
 
-	ClusterDescriptor getClusterDescriptor();
+	String getId();
 
-	void setClusterDescriptor(ClusterDescriptor descriptor);
+	GridProjection getGridProjection();
 
-	ContainerAllocateData getContainerAllocateData();
-
-	boolean accept(Container container);
-
-	List<Container> getContainers();
+	ContainerClusterState getContainerClusterState();
 
 }

@@ -1,38 +1,91 @@
 package hello.appmaster.am.cluster;
 
-import hello.appmaster.am.cluster.ClusterState.State;
+import hello.appmaster.am.grid.Grid;
+import hello.appmaster.am.grid.GridMember;
+import hello.appmaster.am.grid.GridProjection;
+import hello.appmaster.am.grid.ProjectedGrid;
+import hello.appmaster.am.grid.support.DefaultGridMember;
+import hello.appmaster.am.grid.support.ProjectionData;
+import hello.appmaster.am.grid.support.SatisfyStateData;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Queue;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.yarn.api.protocolrecords.StopContainersResponse;
 import org.apache.hadoop.yarn.api.records.Container;
 import org.apache.hadoop.yarn.api.records.ContainerStatus;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.TaskScheduler;
+import org.springframework.util.Assert;
 import org.springframework.yarn.YarnSystemException;
 import org.springframework.yarn.am.AbstractEventingAppmaster;
 import org.springframework.yarn.am.AppmasterCmOperations;
 import org.springframework.yarn.am.AppmasterCmTemplate;
 import org.springframework.yarn.am.allocate.AbstractAllocator;
-import org.springframework.yarn.am.allocate.ContainerAllocateData;
 import org.springframework.yarn.am.monitor.ContainerAware;
 import org.springframework.yarn.support.PollingTaskSupport;
 
-public abstract class AbstractContainerClusterAppmaster extends AbstractEventingAppmaster implements ClusterAppmaster {
+/**
+ * Base implementation of a {@link ContainerClusterAppmaster}.
+ *
+ * @author Janne Valkealahti
+ *
+ */
+public abstract class AbstractContainerClusterAppmaster extends AbstractEventingAppmaster implements ContainerClusterAppmaster {
 
 	private static final Log log = LogFactory.getLog(AbstractContainerClusterAppmaster.class);
 
-//	private final Map<String, ContainerCluster> clusters = new Hashtable<String, ContainerCluster>();
-//	private final Map<String, ClusterState> states = new Hashtable<String, ClusterState>();
+	/** ClusterId to ContainerCluster map */
+	private final Map<String, ContainerCluster> clusters = new HashMap<String, ContainerCluster>();
+
+	/** Containers scheduled to be killed */
+	private final Queue<Container> killQueue = new LinkedList<Container>();
+
+	/** Grid tracking generic grid members */
+	private Grid grid;
+
+	/** Projected grid tracking container clusters */
+	private ProjectedGrid projectedGrid;
 
 	private ClusterTaskPoller clusterTaskPoller;
+
+	private boolean autoStartClusters;
+
+	@Override
+	protected void onInit() throws Exception {
+		super.onInit();
+		grid = doCreateGrid();
+		Assert.notNull(grid, "Grid must be set");
+		projectedGrid = doCreateProjectedGrid(grid);
+		Assert.notNull(projectedGrid, "ProjectedGrid must be set");
+	}
+
+	@Override
+	protected void doStart() {
+		super.doStart();
+		if (autoStartClusters && !clusters.isEmpty()) {
+			for (String id : clusters.keySet()) {
+				startContainerCluster(id);
+			}
+		}
+	}
+
+	@Override
+	protected void doStop() {
+		if (clusterTaskPoller != null) {
+			clusterTaskPoller.stop();
+			clusterTaskPoller = null;
+		}
+		super.doStop();
+	}
 
 	@Override
 	public void submitApplication() {
@@ -53,14 +106,7 @@ public abstract class AbstractContainerClusterAppmaster extends AbstractEventing
 			((ContainerAware)getMonitor()).onContainer(Arrays.asList(container));
 		}
 
-		boolean accepted = false;
-//		for (Entry<String, ContainerCluster> entry : clusters.entrySet()) {
-//			if (entry.getValue().accept(container)) {
-//				accepted = true;
-//				break;
-//			}
-//		}
-
+		boolean accepted = grid.addMember(new DefaultGridMember(container));
 		if (accepted) {
 			getLauncher().launchContainer(container, getCommands());
 		} else {
@@ -79,70 +125,71 @@ public abstract class AbstractContainerClusterAppmaster extends AbstractEventing
 	protected void onContainerCompleted(ContainerStatus status) {
 		super.onContainerCompleted(status);
 
+		grid.removeMember(status.getContainerId());
+
 		if (getMonitor() instanceof ContainerAware) {
 			((ContainerAware)getMonitor()).onContainerStatus(Arrays.asList(status));
 		}
-
-		// when cluster indicates that containers are gone,
-		// move to stopped state
 	}
-
-//	@Override
-//	public void startCluster(String id) {
-//		log.info("XXX: startCluster");
-//		ContainerCluster cluster = clusters.get(id);
-//		if (cluster == null) {
-//			throw new RuntimeException("Cluster with id=" + id + " doesn't exist");
-//		}
-//		states.get(id).setState(State.STARTING);
-//	}
-//
-//	@Override
-//	public void stopCluster(String id) {
-//		ContainerCluster cluster = clusters.get(id);
-//		if (cluster == null) {
-//			throw new RuntimeException("Cluster with id=" + id + " doesn't exist");
-//		}
-//		states.get(id).setState(State.STOPPING);
-//	}
 
 	@Override
-	public Map<String, ContainerCluster> getClusters() {
-		return null;
-//		return clusters;
+	public Map<String, ContainerCluster> getContainerClusters() {
+		return clusters;
 	}
-
-//	@Override
-//	public void createCluster(String id, ClusterDescriptor descriptor) {
-//		log.info("XXX: createCluster");
-//		clusters.put(id, new DefaultContainerCluster(descriptor));
-//		states.put(id, new ClusterState());
-//	}
-//
-//	@Override
-//	public void modifyCluster(String id, ClusterDescriptor descriptor) {
-//		clusters.get(id).setClusterDescriptor(descriptor);
-//	}
 
 	@Override
-	public void setClusterDescriptor(String id, ClusterDescriptor descriptor) {
-//		ContainerCluster cluster = clusters.get(id);
-//		if (cluster == null) {
-//			cluster = createContainerCluster(descriptor);
-//			clusters.put(id, cluster);
-//			states.put(id, new ClusterState());
-//		} else {
-//			cluster.setClusterDescriptor(descriptor);
-//		}
+	public void createContainerCluster(ContainerCluster cluster) {
+		clusters.put(cluster.getId(), cluster);
+		projectedGrid.addProjection(cluster.getGridProjection());
+		if (autoStartClusters) {
+			startContainerCluster(cluster.getId());
+		}
 	}
 
-	protected ContainerCluster createContainerCluster(ClusterDescriptor descriptor) {
-		return new DefaultContainerCluster(descriptor);
+	@Override
+	public void startContainerCluster(String id) {
+		ContainerCluster cluster = clusters.get(id);
+		if (cluster != null) {
+			cluster.getContainerClusterState().setStarting();
+		}
 	}
 
-	protected void doTask() {
-		doAllocation();
-		doKill();
+	@Override
+	public void stopContainerCluster(String id) {
+		ContainerCluster cluster = clusters.get(id);
+		if (cluster != null) {
+			cluster.getContainerClusterState().setStopping();
+		}
+	}
+
+	@Override
+	public void modifyContainerCluster(String id, ProjectionData data) {
+		ContainerCluster cluster = clusters.get(id);
+		if (cluster.getContainerClusterState().isStarted()) {
+			GridProjection gridProjection = cluster.getGridProjection();
+			gridProjection.setProjectionData(data);
+			cluster.getContainerClusterState().setStarting();
+		}
+	}
+
+	public void setInitialClusters(Map<String, ContainerCluster> initialClusters) {
+		this.clusters.putAll(initialClusters);
+	}
+
+	public void setAutoStartClusters(boolean autoStartClusters) {
+		this.autoStartClusters = autoStartClusters;
+	}
+
+	protected abstract Grid doCreateGrid();
+
+	protected abstract ProjectedGrid doCreateProjectedGrid(Grid grid);
+
+	protected abstract void doAllocation(SatisfyStateData data);
+
+	protected abstract void doKill(SatisfyStateData data);
+
+	protected void killContainer(Container container) {
+		killQueue.add(container);
 	}
 
 	protected AppmasterCmOperations getCmTemplate(Container container) {
@@ -155,30 +202,55 @@ public abstract class AbstractContainerClusterAppmaster extends AbstractEventing
 		}
 	}
 
-	private void doAllocation() {
-//		for (Entry<String, ContainerCluster> entry : clusters.entrySet()) {
-//			ContainerCluster cluster = entry.getValue();
-//			if (cluster.getClusterDescriptor().getState().equals(hello.appmaster.am.cluster.ClusterDescriptor.State.ONLINE)) {
-//				ContainerAllocateData allocateData = cluster.getContainerAllocateData();
-//				if (allocateData != null) {
-//					getAllocator().allocateContainers(allocateData);
-//				}
-//			}
-//		}
+	/**
+	 * Periodic task callback called by a {@link ClusterTaskPoller}.
+	 */
+	private void doTask() {
+		for (Entry<ContainerCluster, SatisfyStateData> data : getSatisfyStateData().entrySet()) {
+			if (data.getKey().getContainerClusterState().isStarting()) {
+				data.getKey().getContainerClusterState().setStarted();
+			}
+			doAllocation(data.getValue());
+
+			if (data.getKey().getContainerClusterState().isStopping()) {
+				data.getKey().getContainerClusterState().setStopped();
+				SatisfyStateData sdata = new SatisfyStateData(new ArrayList<GridMember>(data.getKey().getGridProjection().getMembers()), null);
+				doKill(sdata);
+			} else {
+				doKill(data.getValue());
+			}
+
+			Container toKill = null;
+			while ((toKill = killQueue.poll()) != null) {
+				getCmTemplate(toKill).stopContainers();
+			}
+
+		}
 	}
 
-	private void doKill() {
-		log.info("XXX: doKill");
-//		for (Entry<String, ContainerCluster> entry : clusters.entrySet()) {
-//			if (states.get(entry.getKey()).getState().equals(State.STOPPING)) {
-//				for (Container container : entry.getValue().getContainers()) {
-//					StopContainersResponse stopContainers = getCmTemplate(container).stopContainers();
-//				}
-//				states.get(entry.getKey()).setState(State.STOPPED);
-//			}
-//		}
+	/**
+	 * Builds current satisfy state data for all clusters. This data
+	 * contains information what kind of containers clusters will need
+	 * to satisfy its target state. Additionally data may also contain
+	 * containers which it doesn't need which should be killed.
+	 *
+	 * @return the satisfy state data for clusters
+	 */
+	private Map<ContainerCluster, SatisfyStateData> getSatisfyStateData() {
+		Map<ContainerCluster, SatisfyStateData> data = new HashMap<ContainerCluster, SatisfyStateData>();
+		for (Entry<String, ContainerCluster> entry : clusters.entrySet()) {
+			if (entry.getValue().getContainerClusterState().isStarting()) {
+				data.put(entry.getValue(), entry.getValue().getGridProjection().getSatisfyState());
+			} else {
+				data.put(entry.getValue(), null);
+			}
+		}
+		return data;
 	}
 
+	/**
+	 * Internal poller handling cluster allocation request scheduling.
+	 */
 	private class ClusterTaskPoller extends PollingTaskSupport<Void> {
 
 		public ClusterTaskPoller(TaskScheduler taskScheduler, TaskExecutor taskExecutor) {

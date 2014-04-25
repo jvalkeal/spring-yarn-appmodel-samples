@@ -1,5 +1,6 @@
 package hello.appmaster.am.grid;
 
+import org.apache.hadoop.yarn.api.records.Container;
 import org.apache.hadoop.yarn.api.records.ContainerId;
 
 /**
@@ -16,5 +17,7 @@ public interface GridMember {
 	 * @return container member identifier
 	 */
 	ContainerId getId();
+
+	Container getContainer();
 
 }

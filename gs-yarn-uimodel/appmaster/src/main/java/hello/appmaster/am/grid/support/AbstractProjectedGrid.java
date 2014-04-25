@@ -1,146 +1,127 @@
 package hello.appmaster.am.grid.support;
 
 import hello.appmaster.am.grid.Grid;
-import hello.appmaster.am.grid.ProjectedGrid;
-import hello.appmaster.am.grid.GridProjection;
 import hello.appmaster.am.grid.GridMember;
-import hello.appmaster.am.grid.listener.ProjectedGridListener;
+import hello.appmaster.am.grid.GridProjection;
+import hello.appmaster.am.grid.ProjectedGrid;
 import hello.appmaster.am.grid.listener.DefaultProjectedGridListener;
+import hello.appmaster.am.grid.listener.ProjectedGridListener;
 
 import java.util.Collection;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.HashSet;
 
-import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.springframework.util.Assert;
 
 /**
- * Simple {@code ContainerGridGroups} base implementation keeping {@code ContainerGroup}s
- * in a {@code ConcurrentHashMap}.
+ * Simple {@code ProjectedGrid} base implementation.
  *
  * @author Janne Valkealahti
  *
  */
 public abstract class AbstractProjectedGrid implements ProjectedGrid {
 
-	private Grid grid;
+//	private final ConcurrentHashMap<String, GridProjection> projections = new ConcurrentHashMap<String, GridProjection>();
+	private final Collection<GridProjection> projections = new HashSet<GridProjection>();
 
-	private ConcurrentHashMap<String, GridProjection> projections = new ConcurrentHashMap<String, GridProjection>();
+	/** Listener dispatcher for projected grid events */
+	private final DefaultProjectedGridListener listeners = new DefaultProjectedGridListener();
 
-	/** Listener dispatcher for container group events */
-	private DefaultProjectedGridListener projectionListeners = new DefaultProjectedGridListener();
-
-	/**
-	 * Instantiates a new abstract container grid groups.
-	 */
-	public AbstractProjectedGrid() {
-	}
+	private final Grid grid;
 
 	/**
-	 * Instantiates a new abstract container grid groups.
+	 * Instantiates a new abstract projected grid.
 	 *
-	 * @param grid the container grid
+	 * @param grid the grid
 	 */
 	public AbstractProjectedGrid(Grid grid) {
+		Assert.notNull(grid, "Grid must not be null");
 		this.grid = grid;
+		this.grid.addInterceptor(new ProjectionAcceptInterceptor());
 	}
 
 	@Override
-	public boolean addProjection(GridProjection group) {
-		Assert.notNull(group, "Node must not be null");
-		if (projections.putIfAbsent(group.getId(), group) == null) {
-			notifyGroupAdded(group);
-			return true;
-		} else {
-			return false;
+	public boolean addProjection(GridProjection projection) {
+		Assert.notNull(projection, "Projection must not be null");
+		return projections.add(projection);
+	}
+
+	@Override
+	public boolean removeProjection(GridProjection projection) {
+		Assert.notNull(projection, "Projection must not be null");
+		boolean removed = projections.remove(projection);
+		if (removed) {
+			notifyGridProjectionRemoved(projection);
 		}
-	}
-
-	@Override
-	public boolean removeProjection(String id) {
-		Assert.notNull(id, "Group identifier must not be null");
-		GridProjection removed = projections.remove(id);
-		if (removed != null) {
-			notifyGroupRemoved(removed);
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	@Override
-	public GridProjection getProjection(String id) {
-		return projections.get(id);
+		return removed;
 	}
 
 	@Override
 	public Collection<GridProjection> getProjections() {
-		return projections.values();
-	}
-
-	@Override
-	public GridProjection getProjectionByNode(ContainerId id) {
-		for (GridProjection group : projections.values()) {
-			if (group.hasMember(id)) {
-				return group;
-			}
-		}
-		return null;
+		return projections;
 	}
 
 	@Override
 	public void addProjectedGridListener(ProjectedGridListener listener) {
-		projectionListeners.register(listener);
+		listeners.register(listener);
 	}
 
 	/**
-	 * Sets the container grid.
+	 * Notifies registered {@code ProjectedGridListener}s that
+	 * a {@code GridProjection} has been added to a {@code ProjectedGrid}.
 	 *
-	 * @param containerGrid the new container grid
+	 * @param projection the grid projection
 	 */
-	public void setContainerGrid(Grid containerGrid) {
-		this.grid = containerGrid;
+	protected void notifyGridProjectionAdded(GridProjection projection) {
+		listeners.projectionAdded(projection);
 	}
 
 	/**
-	 * Notifies registered {@code ContainerGridGroupsListener}s that
-	 * a {@code ContainerGroup} has been added to a {@code ContainerGridGroups}.
+	 * Notifies registered {@code ProjectedGridListener}s that
+	 * a {@code GridProjection} has been removed from a {@code ProjectedGrid}.
 	 *
-	 * @param group the group
+	 * @param projection the grid projection
 	 */
-	protected void notifyGroupAdded(GridProjection group) {
-		projectionListeners.projectionAdded(group);
-	}
-
-	/**
-	 * Notifies registered {@code ContainerGridGroupsListener}s that
-	 * a {@code ContainerGroup} has been removed from a {@code ContainerGridGroups}.
-	 *
-	 * @param group the group
-	 */
-	protected void notifyGroupRemoved(GridProjection group) {
-		projectionListeners.projectionRemoved(group);
+	protected void notifyGridProjectionRemoved(GridProjection projection) {
+		listeners.projectionRemoved(projection);
 	}
 
 	/**
 	 * Notifies registered {@code ContainerGridGroupsListener}s that
 	 * a {@code ContainerNode} has been added to a {@code ContainerGroup}.
 	 *
-	 * @param group the group
-	 * @param node the node
+	 * @param projection the grid projection
+	 * @param member the grid member
 	 */
-	protected void notifyNodeAdded(GridProjection group, GridMember node) {
-		projectionListeners.memberAdded(group, node);
+	protected void notifyMemberAdded(GridProjection projection, GridMember member) {
+		listeners.memberAdded(projection, member);
 	}
 
 	/**
 	 * Notifies registered {@code ContainerGridGroupsListener}s that
 	 * a {@code ContainerNode} has been removed from a {@code ContainerGroup}.
 	 *
-	 * @param group the group
-	 * @param node the node
+	 * @param projection the group
+	 * @param member the node
 	 */
-	protected void notifyNodeRemoved(GridProjection group, GridMember node) {
-		projectionListeners.memberRemoved(group, node);
+	protected void notifyMemberRemoved(GridProjection projection, GridMember member) {
+		listeners.memberRemoved(projection, member);
+	}
+
+	private class ProjectionAcceptInterceptor implements GridMemberInterceptor {
+
+		@Override
+		public GridMember preAdd(GridMember member, Grid grid) {
+			// intercept and check if any projection
+			// accepts this member
+			for (GridProjection projection : getProjections()) {
+				if (projection.acceptMember(member)) {
+					notifyMemberAdded(projection, member);
+					return member;
+				}
+			}
+			return null;
+		}
+
 	}
 
 }
