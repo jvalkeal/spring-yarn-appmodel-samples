@@ -173,6 +173,31 @@ public class ManagedContainerClusterAppmasterTests {
 		assertDoTask(appmaster, 1, 0, 0, 0);
 	}
 
+	@Test
+	public void testReleaseShouldReAllocate() throws Exception {
+		TestContainerAllocator allocator = new TestContainerAllocator();
+		TestContainerLauncher launcher = new TestContainerLauncher();
+		TestManagedContainerClusterAppmaster appmaster = createTestAppmaster(allocator, launcher);
+		AnyGridProjection projection = new AnyGridProjection(1);
+		DefaultContainerCluster cluster = new DefaultContainerCluster("foo", projection);
+
+		// create and start
+		appmaster.createContainerCluster(cluster);
+		appmaster.startContainerCluster("foo");
+		assertDoTask(appmaster, 1, 0, 0, 0);
+
+		// allocate container 1
+		Container container1 = allocateContainer(appmaster, 1);
+		assertThat(projection.getMembers().size(), is(1));
+		assertDoTask(appmaster, null, null, null, null);
+
+		// release, should re-allocate
+		releaseContainer(appmaster, container1);
+		assertThat(projection.getMembers().size(), is(0));
+		assertDoTask(appmaster, 1, 0, 0, 0);
+	}
+
+
 	private Container allocateContainer(Object appmaster, int id) throws Exception {
 		ContainerId containerId = MockUtils.getMockContainerId(MockUtils.getMockApplicationAttemptId(0, 0), 0);
 		Container container = MockUtils.getMockContainer(containerId, null, null, null);

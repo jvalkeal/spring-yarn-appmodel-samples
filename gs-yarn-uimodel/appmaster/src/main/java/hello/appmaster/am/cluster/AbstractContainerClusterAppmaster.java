@@ -130,6 +130,11 @@ public abstract class AbstractContainerClusterAppmaster extends AbstractEventing
 
 		grid.removeMember(status.getContainerId());
 
+		// TODO: this doesn't look nice
+		for (ContainerCluster cluster : clusters.values()) {
+			cluster.getContainerClusterState().command(Event.CONFIGURE);
+		}
+
 		if (getMonitor() instanceof ContainerAware) {
 			((ContainerAware)getMonitor()).onContainerStatus(Arrays.asList(status));
 		}
