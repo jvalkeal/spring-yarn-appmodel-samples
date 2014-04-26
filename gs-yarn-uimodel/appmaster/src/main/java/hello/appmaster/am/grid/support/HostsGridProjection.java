@@ -41,6 +41,7 @@ public class HostsGridProjection extends AbstractGridProjection {
 
 	@Override
 	public void setProjectionData(ProjectionData data) {
+		super.setProjectionData(data);
 		if(data.getHosts() != null) {
 			hosts.clear();
 			hosts.putAll(data.getHosts());

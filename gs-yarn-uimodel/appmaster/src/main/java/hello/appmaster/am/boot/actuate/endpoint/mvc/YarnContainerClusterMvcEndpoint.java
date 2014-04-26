@@ -56,7 +56,12 @@ public class YarnContainerClusterMvcEndpoint extends EndpointMvcAdapter {
 		if (request.getProjectionData().getAny() != null) {
 			projectionData.setAny(request.getProjectionData().getAny());
 		}
-		projectionData.setHosts(request.getProjectionData().getHosts());
+		if (request.getProjectionData().getHosts() != null) {
+			projectionData.setHosts(request.getProjectionData().getHosts());
+		}
+		if (request.getProjectionData().getRacks() != null) {
+			projectionData.setRacks(request.getProjectionData().getRacks());
+		}
 		projection.setProjectionData(projectionData);
 
 		delegate.createCluster(request.getClusterId(), projection);
@@ -75,13 +80,19 @@ public class YarnContainerClusterMvcEndpoint extends EndpointMvcAdapter {
 		return new ResponseEntity<CreateContainerClusterResponse>(response, HttpStatus.OK);
 	}
 
+	/**
+	 * Gets a status of a specific container cluster.
+	 *
+	 * @param clusterId the container cluster identifier
+	 * @return the container cluster status response
+	 */
 	@RequestMapping(value = "/{clusterId}", method = RequestMethod.GET)
-	public HttpEntity<ClusterStateResponse> cluster(@PathVariable("clusterId") String clusterId) {
+	public HttpEntity<ContainerClusterStatusResponse> cluster(@PathVariable("clusterId") String clusterId) {
 		ContainerCluster cluster = delegate.getClusters().get(clusterId);
 		if (cluster == null) {
 			throw new NoSuchClusterException("No such cluster: " + clusterId);
 		}
-		return new ResponseEntity<ClusterStateResponse>(new ClusterStateResponse(cluster), HttpStatus.OK);
+		return new ResponseEntity<ContainerClusterStatusResponse>(new ContainerClusterStatusResponse(cluster), HttpStatus.OK);
 	}
 
 	@RequestMapping(value = "/{clusterId}/start", method = RequestMethod.POST)
@@ -98,9 +109,22 @@ public class YarnContainerClusterMvcEndpoint extends EndpointMvcAdapter {
 
 	@RequestMapping(value = "/{clusterId}", method = RequestMethod.PATCH)
 	public HttpEntity<String> modify(@PathVariable("clusterId") String clusterId, @RequestBody CreateContainerClusterRequest request) {
-		if (request.getProjectionData().getAny() != null) {
-			delegate.modifyCluster(clusterId, request.getProjectionData().getAny());
+		ContainerCluster cluster = delegate.getClusters().get(clusterId);
+		if (cluster == null) {
+			throw new NoSuchClusterException("No such cluster: " + clusterId);
 		}
+		ProjectionData data = new ProjectionData();
+		if (request.getProjectionData().getAny() != null) {
+			data.setAny(request.getProjectionData().getAny());
+		}
+		if (request.getProjectionData().getHosts() != null) {
+			data.setHosts(request.getProjectionData().getHosts());
+		}
+		if (request.getProjectionData().getRacks() != null) {
+			data.setRacks(request.getProjectionData().getRacks());
+		}
+		delegate.modifyCluster(clusterId, data);
+
 		return new ResponseEntity<String>("modify ok", HttpStatus.OK);
 	}
 

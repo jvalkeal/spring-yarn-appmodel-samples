@@ -77,8 +77,8 @@ public class YarnContainerClusterEndpoint extends AbstractEndpoint<YarnContainer
 		appmaster.stopContainerCluster(clusterId);
 	}
 
-	public void modifyCluster(String id, int count) {
-		appmaster.modifyContainerCluster(id, new ProjectionData(count));
+	public void modifyCluster(String id, ProjectionData data) {
+		appmaster.modifyContainerCluster(id, data);
 	}
 
 }

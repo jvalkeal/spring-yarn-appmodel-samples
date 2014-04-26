@@ -59,4 +59,6 @@ public interface GridProjection {
 	 */
 	void setProjectionData(ProjectionData data);
 
+	ProjectionData getProjectionData();
+
 }

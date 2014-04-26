@@ -14,5 +14,5 @@ spring:
             containerCount: 1
             keepContextAlive: true
             launchcontext:
-                locality: false
+                locality: true
                 archiveFile: gs-yarn-uimodel-container-0.1.0.jar

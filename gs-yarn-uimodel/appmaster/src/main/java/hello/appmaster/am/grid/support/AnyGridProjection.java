@@ -48,6 +48,7 @@ public class AnyGridProjection extends AbstractGridProjection {
 
 	@Override
 	public void setProjectionData(ProjectionData data) {
+		super.setProjectionData(data);
 		count = data.getAny() != null ? data.getAny() : 0;
 	}
 

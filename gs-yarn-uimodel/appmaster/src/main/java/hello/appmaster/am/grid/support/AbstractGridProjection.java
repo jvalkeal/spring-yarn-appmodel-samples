@@ -23,6 +23,8 @@ public abstract class AbstractGridProjection implements GridProjection {
 
 	private final ConcurrentHashMap<String, HostCountHolder> hostCounts = new ConcurrentHashMap<String, HostCountHolder>();
 
+	private ProjectionData projectionData;
+
 	/**
 	 * Instantiates a new abstract grid projection.
 	 */
@@ -43,7 +45,14 @@ public abstract class AbstractGridProjection implements GridProjection {
 	public abstract SatisfyStateData getSatisfyState();
 
 	@Override
-	public abstract void setProjectionData(ProjectionData data);
+	public void setProjectionData(ProjectionData data) {
+		projectionData = data;
+	}
+
+	@Override
+	public ProjectionData getProjectionData() {
+		return projectionData;
+	}
 
 	protected boolean addMember(GridMember member) {
 		Assert.notNull(member, "Node must not be null");

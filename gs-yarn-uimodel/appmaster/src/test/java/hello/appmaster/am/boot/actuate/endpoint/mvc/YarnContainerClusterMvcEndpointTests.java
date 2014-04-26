@@ -64,7 +64,7 @@ public class YarnContainerClusterMvcEndpointTests {
 	}
 
 	@Test
-	public void testListClustersEmpty() throws Exception {
+	public void testInitialHome() throws Exception {
 		mvc.
 			perform(get(BASE)).
 			andExpect(status().isOk()).
@@ -92,6 +92,20 @@ public class YarnContainerClusterMvcEndpointTests {
 		assertThat(clusters.get("foo").getGridProjection().getSatisfyState().getAllocateData().getHosts().get("host1"), is(11));
 		assertThat(clusters.get("foo").getGridProjection().getSatisfyState().getAllocateData().getHosts().get("host2"), is(22));
 		assertThat(clusters.get("foo").getContainerClusterState().getState(), is(ContainerClusterState.State.INITIAL));
+	}
+
+	@Test
+	public void testClusterStatus() throws Exception {
+		String content = "{\"clusterId\":\"foo\",\"projection\":\"HOSTS\",\"projectionData\":{\"any\":1,\"hosts\":{\"host1\":11,\"host2\":22}}}";
+		mvc.
+			perform(post(BASE).content(content).contentType(MediaType.APPLICATION_JSON)).
+			andExpect(status().isOk()).
+			andExpect(content().string(containsString("foo")));
+		mvc.
+			perform(get(BASE + "/foo")).
+			andExpect(status().isOk()).
+			andExpect(content().string(containsString("foo")));
+
 	}
 
 	@Test
