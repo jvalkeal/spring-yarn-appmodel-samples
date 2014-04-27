@@ -1,5 +1,8 @@
 server:
     port: 0
+http:
+    mappers:
+        jsonPrettyPrint: true
 spring:
     hadoop:
         fsUri: hdfs://node1:8020
