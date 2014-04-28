@@ -1,47 +1,27 @@
+/*
+ * Copyright 2014 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package hello.appmaster.am.cluster;
 
-import java.util.List;
-
-import hello.appmaster.am.grid.Grid;
-import hello.appmaster.am.grid.GridMember;
-import hello.appmaster.am.grid.ProjectedGrid;
-import hello.appmaster.am.grid.support.DefaultGrid;
-import hello.appmaster.am.grid.support.DefaultProjectedGrid;
-import hello.appmaster.am.grid.support.SatisfyStateData;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
+/**
+ * Default {@link ContainerClusterAppmaster} implementation using functionality
+ * from {@link AbstractContainerClusterAppmaster}.
+ *
+ * @author Janne Valkealahti
+ *
+ */
 public class ManagedContainerClusterAppmaster extends AbstractContainerClusterAppmaster {
-
-	private static final Log log = LogFactory.getLog(ManagedContainerClusterAppmaster.class);
-
-	@Override
-	protected Grid doCreateGrid() {
-		return new DefaultGrid();
-	}
-
-	@Override
-	protected ProjectedGrid doCreateProjectedGrid(Grid grid) {
-		return new DefaultProjectedGrid(grid);
-	}
-
-	@Override
-	protected void doAllocation(SatisfyStateData data) {
-		// this adds new request, does not replace
-		if(data != null) {
-			getAllocator().allocateContainers(data.getAllocateData());
-		}
-	}
-
-	@Override
-	protected void doKill(SatisfyStateData data) {
-		if(data != null) {
-			List<GridMember> remove = data.getRemoveData();
-			for (GridMember member : remove) {
-				killContainer(member.getContainer());
-			}
-		}
-	}
 
 }

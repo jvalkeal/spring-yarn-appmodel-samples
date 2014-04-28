@@ -81,7 +81,9 @@ public class YarnContainerClusterMvcEndpointTests {
 		mvc.
 			perform(get(BASE)).
 			andExpect(status().isOk()).
-			andExpect(content().string(containsString("\"links\":")));
+			andExpect(content().string(containsString("\"links\":"))).
+			andExpect(content().string(containsString("\"satisfyState\":"))).
+			andExpect(content().string(containsString("\"members\":")));
 
 		Map<String, ContainerCluster> clusters = TestUtils.readField("clusters", appmaster);
 		assertThat(clusters.size(), is(1));

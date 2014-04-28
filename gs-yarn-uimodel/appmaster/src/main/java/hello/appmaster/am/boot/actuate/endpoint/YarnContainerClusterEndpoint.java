@@ -35,7 +35,9 @@ import org.springframework.yarn.am.YarnAppmaster;
  * @author Janne Valkealahti
  *
  */
-public class YarnContainerClusterEndpoint extends AbstractEndpoint<YarnContainerClusterEndpointResponse> {
+public class YarnContainerClusterEndpoint extends AbstractEndpoint<Map<String, ContainerCluster>> {
+
+	// AbstractEndpoint<YarnContainerClusterEndpointResponse>
 
 	public final static String ENDPOINT_ID = "yarn_containercluster";
 
@@ -56,9 +58,12 @@ public class YarnContainerClusterEndpoint extends AbstractEndpoint<YarnContainer
 	}
 
 	@Override
-	public YarnContainerClusterEndpointResponse invoke() {
-		YarnContainerClusterEndpointResponse response = new YarnContainerClusterEndpointResponse();
-		return response;
+	public Map<String, ContainerCluster> invoke() {
+
+		return appmaster.getContainerClusters();
+
+//		YarnContainerClusterEndpointResponse response = new YarnContainerClusterEndpointResponse();
+//		return response;
 	}
 
 	public Map<String, ContainerCluster> getClusters() {

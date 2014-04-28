@@ -3,6 +3,7 @@ package hello.appmaster.am.grid.support;
 import hello.appmaster.am.grid.GridMember;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -16,13 +17,17 @@ public class HostsGridProjection extends AbstractGridProjection {
 		super();
 	}
 
+	public HostsGridProjection(Map<String, Integer> hosts) {
+		super();
+		this.hosts.putAll(hosts);
+	}
+
 	@Override
 	public SatisfyStateData getSatisfyState() {
 		SatisfyStateData data = new SatisfyStateData();
 		ArrayList<GridMember> remove = new ArrayList<GridMember>();
 
 		for (Entry<String, Integer> entry : hosts.entrySet()) {
-//			int delta = entry.getValue() - (getHostCounts().containsKey(entry.getKey()) ? getHostCounts().get(entry.getKey()) : 0);
 			int delta = entry.getValue() - getHostCount(entry.getKey());
 			data.getAllocateData().addHosts(entry.getKey(), Math.max(delta, 0));
 
@@ -45,6 +50,24 @@ public class HostsGridProjection extends AbstractGridProjection {
 		if(data.getHosts() != null) {
 			hosts.clear();
 			hosts.putAll(data.getHosts());
+		}
+	}
+
+	@Override
+	public boolean acceptMember(GridMember member) {
+
+		String host = member.getContainer().getNodeId().getHost();
+		Collection<GridMember> hostCountMembers = getHostCountMembers(host);
+
+		Integer target = hosts.get(host);
+		if (target == null) {
+			return false;
+		}
+
+		if (hostCountMembers.size() < target) {
+			return super.acceptMember(member);
+		} else {
+			return false;
 		}
 	}
 

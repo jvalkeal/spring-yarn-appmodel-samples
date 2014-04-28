@@ -2,6 +2,9 @@ package hello.appmaster.am.boot.actuate.endpoint.mvc;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
+
+import java.util.Collection;
+
 import hello.appmaster.am.boot.actuate.endpoint.YarnContainerClusterEndpoint;
 import hello.appmaster.am.cluster.ContainerCluster;
 import hello.appmaster.am.grid.GridProjection;
@@ -34,6 +37,24 @@ public class YarnContainerClusterMvcEndpoint extends EndpointMvcAdapter {
 	public YarnContainerClusterMvcEndpoint(YarnContainerClusterEndpoint delegate) {
 		super(delegate);
 		this.delegate = delegate;
+	}
+
+	@RequestMapping(method = RequestMethod.GET)
+	@ResponseBody
+	public Object invoke() {
+		Collection<ContainerCluster> clusters = delegate.getClusters().values();
+		YarnContainerClusterEndpointResponse response = new YarnContainerClusterEndpointResponse(clusters);
+		for (ContainerCluster cluster : clusters) {
+			response.add(
+					linkTo(
+						methodOn(YarnContainerClusterMvcEndpoint.class).
+						cluster(cluster.getId())
+					).
+					withRel("cluster")
+				);
+		}
+
+		return response;
 	}
 
 	/**

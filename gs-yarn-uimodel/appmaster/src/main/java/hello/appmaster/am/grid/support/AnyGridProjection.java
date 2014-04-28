@@ -52,4 +52,13 @@ public class AnyGridProjection extends AbstractGridProjection {
 		count = data.getAny() != null ? data.getAny() : 0;
 	}
 
+	@Override
+	public boolean acceptMember(GridMember member) {
+		if (getMembers().size() < count) {
+			return super.acceptMember(member);
+		} else {
+			return false;
+		}
+	}
+
 }
