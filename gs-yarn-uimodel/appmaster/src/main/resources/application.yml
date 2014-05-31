@@ -13,9 +13,27 @@ spring:
         applicationBaseDir: /app/
         applicationDir: /app/gs-yarn-uimodel/
         appmaster:
-            appmasterClass: hello.appmaster.am.cluster.ManagedContainerClusterAppmaster
+            appmasterClass: org.springframework.yarn.am.cluster.ManagedContainerClusterAppmaster
             containerCount: 1
             keepContextAlive: true
             launchcontext:
                 locality: true
                 archiveFile: gs-yarn-uimodel-container-0.1.0.jar
+            containercluster:
+              ? cluster1
+              : ? resource
+                : priority: 1
+                  memory: 64
+                  virtualCores: 1
+                ? launchcontext
+                : locality: true
+              ? cluster2
+              : ? resource
+                : priority: 2
+                  memory: 64
+                  virtualCores: 1
+                ? launchcontext
+                : locality: true
+        endpoints:
+            containercluster:
+                enabled: true

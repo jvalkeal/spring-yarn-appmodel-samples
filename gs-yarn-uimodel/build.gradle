@@ -72,8 +72,8 @@ project('appmaster') {
         compile("org.springframework.boot:spring-boot-starter-actuator:1.0.0.RELEASE") {
             exclude group:'ch.qos.logback'
         }
-        compile("com.fasterxml.jackson.core:jackson-databind")
-        compile("org.springframework.hateoas:spring-hateoas:0.8.0.RELEASE")
+        //compile("com.fasterxml.jackson.core:jackson-databind")
+        //compile("org.springframework.hateoas:spring-hateoas:0.8.0.RELEASE")
 
         //testCompile("org.springframework.data:spring-yarn-boot:2.0.0.BUILD-SNAPSHOT") {
         //    exclude group: "javax.servlet", module: "servlet-api"
