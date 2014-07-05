@@ -1,3 +1,18 @@
+/*
+ * Copyright 2014 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package hello.client.springcli;
 
 import java.util.ArrayList;
@@ -11,13 +26,13 @@ import org.springframework.boot.cli.util.Log;
 import org.springframework.util.Assert;
 import org.springframework.yarn.boot.app.YarnContainerClusterApplication;
 
-public class ClusterInfoCommand extends AbstractApplicationCommand {
+public class YarnClusterStartCommand extends AbstractApplicationCommand {
 
-	public ClusterInfoCommand() {
-		super("clusterinfo", "List cluster info", new ClusterInfoOptionHandler());
+	public YarnClusterStartCommand() {
+		super("clusterstart", "Start Cluster", new ClusterStartOptionHandler());
 	}
 
-	private static final class ClusterInfoOptionHandler extends ApplicationOptionHandler {
+	private static final class ClusterStartOptionHandler extends ApplicationOptionHandler {
 
 		private OptionSpec<String> applicationIdOption;
 
@@ -35,7 +50,7 @@ public class ClusterInfoCommand extends AbstractApplicationCommand {
 			Assert.isTrue(nonOptionArguments.size() == 2, "Cluster Id and Application Id must be defined");
 			YarnContainerClusterApplication app = new YarnContainerClusterApplication();
 			Properties appProperties = new Properties();
-			appProperties.setProperty("spring.yarn.internal.ContainerClusterApplication.operation", "CLUSTERINFO");
+			appProperties.setProperty("spring.yarn.internal.ContainerClusterApplication.operation", "CLUSTERSTART");
 			appProperties.setProperty("spring.yarn.internal.ContainerClusterApplication.applicationId",
 					options.valueOf(applicationIdOption));
 			appProperties.setProperty("spring.yarn.internal.ContainerClusterApplication.clusterId",
