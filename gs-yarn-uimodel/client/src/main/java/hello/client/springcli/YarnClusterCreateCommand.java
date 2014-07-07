@@ -15,8 +15,6 @@
  */
 package hello.client.springcli;
 
-import static java.util.Arrays.asList;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -46,8 +44,8 @@ public class YarnClusterCreateCommand extends AbstractApplicationCommand {
 
 		@Override
 		protected final void options() {
-			this.applicationIdOption = option(asList("application-id", "a"), "Specify Yarn Application Id").withRequiredArg();
-			this.clusterIdOption = option(asList("cluster-id", "c"), "Specify Cluster Id").withRequiredArg();
+			this.applicationIdOption = option(CliSystemConstants.OPTIONS_APPLICATION_ID, CliSystemConstants.DESC_APPLICATION_ID).withRequiredArg();
+			this.clusterIdOption = option(CliSystemConstants.OPTIONS_CLUSTER_ID, CliSystemConstants.DESC_CLUSTER_ID).withRequiredArg();
 			this.projectionTypeOption = option("projection-type", "Specify Projection Type").withRequiredArg();
 			this.projectionOption = option("projection-any", "Specify Any Count").withRequiredArg();
 		}

@@ -36,7 +36,7 @@ public abstract class AbstractCli {
 		System.setProperty("java.awt.headless", Boolean.toString(true));
 		LogbackInitializer.initialize();
 
-		CommandRunner runner = new CommandRunner("spring");
+		CommandRunner runner = new CommandRunner(getMainCommandName());
 		runner.addCommand(new HelpCommand(runner));
 
 		for (Command command : commands) {
@@ -49,6 +49,10 @@ public abstract class AbstractCli {
 			// If successful, leave it to run in case it's a server app
 			System.exit(exitCode);
 		}
+	}
+
+	protected String getMainCommandName() {
+		return "java -jar <jar>";
 	}
 
 }

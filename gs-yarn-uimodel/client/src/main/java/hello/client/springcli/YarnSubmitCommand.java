@@ -38,7 +38,7 @@ public class YarnSubmitCommand extends AbstractApplicationCommand {
 
 		@Override
 		protected final void options() {
-			this.applicationVersionOption = option("application-version", "Specify Yarn Application Id").withRequiredArg();
+			this.applicationVersionOption = option(CliSystemConstants.OPTIONS_APPLICATION_VERSION, CliSystemConstants.DESC_APPLICATION_VERSION).withRequiredArg();
 		}
 
 		@Override

@@ -38,7 +38,7 @@ public class YarnKillCommand extends AbstractApplicationCommand {
 
 		@Override
 		protected final void options() {
-			this.applicationIdOption = option("application-id", "Specify Yarn Application Id").withRequiredArg();
+			this.applicationIdOption = option(CliSystemConstants.OPTIONS_APPLICATION_ID, CliSystemConstants.DESC_APPLICATION_ID).withRequiredArg();
 		}
 
 		@Override

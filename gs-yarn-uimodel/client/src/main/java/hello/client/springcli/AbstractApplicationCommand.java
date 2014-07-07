@@ -15,6 +15,9 @@
  */
 package hello.client.springcli;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
 
@@ -36,7 +39,7 @@ public class AbstractApplicationCommand extends OptionParsingCommand {
 			try {
 				runApplication(options);
 			} catch (Exception e) {
-				Log.error(e.getMessage());
+				Log.error(getRootCause(e).getMessage());
 				return ExitStatus.ERROR;
 			}
 			return ExitStatus.OK;
@@ -49,5 +52,19 @@ public class AbstractApplicationCommand extends OptionParsingCommand {
 		}
 
 	}
+
+    private static Throwable getRootCause(Throwable throwable) {
+        List<Throwable> throwables = getThrowableList(throwable);
+        return (throwables.size() < 2 ? null : (Throwable)throwables.get(throwables.size() - 1));
+    }
+
+    private static List<Throwable> getThrowableList(Throwable throwable) {
+        List<Throwable> throwables = new ArrayList<Throwable>();
+        while (throwable != null && throwables.contains(throwable) == false) {
+            throwables.add(throwable);
+            throwable = throwable.getCause();
+        }
+        return throwables;
+    }
 
 }

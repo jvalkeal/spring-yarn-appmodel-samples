@@ -42,7 +42,7 @@ public class YarnSubmittedCommand extends AbstractApplicationCommand {
 
 		@Override
 		protected final void options() {
-			typeOption = option("type", "Specify Yarn Application Type").withOptionalArg().defaultsTo("GS");
+			typeOption = option(CliSystemConstants.OPTIONS_APPLICATION_TYPE, CliSystemConstants.DESC_APPLICATION_TYPE).withOptionalArg().defaultsTo("GS");
 			verboseOption = option("verbose", "Verbose Output").withOptionalArg().ofType(Boolean.class)
 					.defaultsTo(true);
 		}

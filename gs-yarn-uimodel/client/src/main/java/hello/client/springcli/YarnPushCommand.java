@@ -15,21 +15,18 @@
  */
 package hello.client.springcli;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
 
 import org.springframework.boot.cli.util.Log;
-import org.springframework.util.Assert;
 import org.springframework.yarn.boot.app.YarnPushApplication;
 
 public class YarnPushCommand extends AbstractApplicationCommand {
 
 	public YarnPushCommand() {
-		super("push", "Push Application", new PushOptionHandler());
+		super("push", "Push new application version", new PushOptionHandler());
 	}
 
 	private static final class PushOptionHandler extends ApplicationOptionHandler {
@@ -38,19 +35,19 @@ public class YarnPushCommand extends AbstractApplicationCommand {
 
 		@Override
 		protected final void options() {
-			this.applicationVersionOption = option("application-version", "Specify application version").withRequiredArg();
+			this.applicationVersionOption = option(CliSystemConstants.OPTIONS_APPLICATION_VERSION,
+					CliSystemConstants.DESC_APPLICATION_VERSION).withOptionalArg().defaultsTo("app");
 		}
 
 		@Override
 		protected void runApplication(OptionSet options) throws Exception {
-			List<?> nonOptionArguments = new ArrayList<Object>(options.nonOptionArguments());
-			Assert.isTrue(nonOptionArguments.size() == 1, "Application Version must be defined");
 			String appVersion = options.valueOf(applicationVersionOption);
 			YarnPushApplication app = new YarnPushApplication();
 			app.applicationVersion(appVersion);
 			Properties instanceProperties = new Properties();
 			instanceProperties.setProperty("spring.yarn.applicationVersion", appVersion);
 			app.configFile("application.properties", instanceProperties);
+			app.run();
 			Log.info("New instance " + appVersion + " installed");
 		}
 

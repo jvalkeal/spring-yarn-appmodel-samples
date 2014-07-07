@@ -25,7 +25,7 @@ import org.springframework.yarn.boot.app.YarnInfoApplication;
 public class YarnPushedCommand extends AbstractCommand {
 
 	public YarnPushedCommand() {
-		super("pushed", "list running applications");
+		super("pushed", "List Pushed applications");
 	}
 
 	@Override
