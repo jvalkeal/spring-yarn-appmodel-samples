@@ -53,11 +53,12 @@ subprojects { subproject ->
 project('client') {
     eclipse.project.name = 'gs-yarn-uimodel-client'
     dependencies {
-        compile("args4j:args4j:2.0.28")
-        compile("org.springframework.boot:spring-boot-cli:1.1.0.RELEASE")
-        compile("org.springframework.boot:spring-boot-starter-web:1.1.0.RELEASE") {
-            exclude group:'ch.qos.logback'
-        }
+        compile("org.springframework.data:spring-yarn-boot-cli:2.1.0.BUILD-SNAPSHOT")
+        //compile("args4j:args4j:2.0.28")
+        //compile("org.springframework.boot:spring-boot-cli:1.1.0.RELEASE")
+        //compile("org.springframework.boot:spring-boot-starter-web:1.1.0.RELEASE") {
+        //    exclude group:'ch.qos.logback'
+        //}
     }
     jar {
         appendix = 'client'
