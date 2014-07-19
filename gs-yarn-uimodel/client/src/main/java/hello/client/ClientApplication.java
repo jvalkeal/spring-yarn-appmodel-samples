@@ -1,5 +1,9 @@
 package hello.client;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.boot.cli.command.Command;
 import org.springframework.yarn.boot.cli.AbstractCli;
 import org.springframework.yarn.boot.cli.YarnClusterCreateCommand;
 import org.springframework.yarn.boot.cli.YarnClusterDestroyCommand;
@@ -13,23 +17,27 @@ import org.springframework.yarn.boot.cli.YarnPushCommand;
 import org.springframework.yarn.boot.cli.YarnPushedCommand;
 import org.springframework.yarn.boot.cli.YarnSubmitCommand;
 import org.springframework.yarn.boot.cli.YarnSubmittedCommand;
+import org.springframework.yarn.boot.cli.shell.ShellCommand;
 
 public class ClientApplication extends AbstractCli {
 
 	public static void main(String... args) {
+		List<Command> commands = new ArrayList<Command>();
+		commands.add(new YarnPushCommand());
+		commands.add(new YarnPushedCommand());
+		commands.add(new YarnSubmitCommand());
+		commands.add(new YarnSubmittedCommand());
+		commands.add(new YarnKillCommand());
+		commands.add(new YarnClustersInfoCommand());
+		commands.add(new YarnClusterInfoCommand());
+		commands.add(new YarnClusterCreateCommand());
+		commands.add(new YarnClusterStartCommand());
+		commands.add(new YarnClusterStopCommand());
+		commands.add(new YarnClusterModifyCommand());
+		commands.add(new YarnClusterDestroyCommand());
 		ClientApplication app = new ClientApplication();
-		app.registerCommand(new YarnPushCommand());
-		app.registerCommand(new YarnPushedCommand());
-		app.registerCommand(new YarnSubmitCommand());
-		app.registerCommand(new YarnSubmittedCommand());
-		app.registerCommand(new YarnKillCommand());
-		app.registerCommand(new YarnClustersInfoCommand());
-		app.registerCommand(new YarnClusterInfoCommand());
-		app.registerCommand(new YarnClusterCreateCommand());
-		app.registerCommand(new YarnClusterStartCommand());
-		app.registerCommand(new YarnClusterStopCommand());
-		app.registerCommand(new YarnClusterModifyCommand());
-		app.registerCommand(new YarnClusterDestroyCommand());
+		app.registerCommands(commands);
+		app.registerCommand(new ShellCommand(commands));
 		app.doMain(args);
 	}
 
