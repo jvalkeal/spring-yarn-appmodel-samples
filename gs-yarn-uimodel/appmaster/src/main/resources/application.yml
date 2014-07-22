@@ -16,9 +16,6 @@ spring:
             appmasterClass: org.springframework.yarn.am.cluster.ManagedContainerClusterAppmaster
             containerCount: 1
             keepContextAlive: true
-            launchcontext:
-                locality: true
-                archiveFile: gs-yarn-uimodel-container-0.1.0.jar
             containercluster:
               ? cluster1
               : ? resource
@@ -27,6 +24,10 @@ spring:
                   virtualCores: 1
                 ? launchcontext
                 : locality: true
+                  archiveFile: gs-yarn-uimodel-cont1-0.1.0.jar
+                ? localizer
+                : patterns:
+                    - "*cont1*jar"
               ? cluster2
               : ? resource
                 : priority: 2
@@ -34,6 +35,10 @@ spring:
                   virtualCores: 1
                 ? launchcontext
                 : locality: true
+                  archiveFile: gs-yarn-uimodel-cont2-0.1.0.jar
+                ? localizer
+                : patterns:
+                    - "*cont2*jar"
               ? cluster3
               : ? resource
                 : priority: 3
@@ -41,6 +46,10 @@ spring:
                   virtualCores: 1
                 ? launchcontext
                 : locality: false
+                  archiveFile: gs-yarn-uimodel-cont3-0.1.0.jar
+                ? localizer
+                : patterns:
+                    - "*cont3*jar"
         endpoints:
             containercluster:
                 enabled: true

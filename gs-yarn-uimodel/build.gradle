@@ -54,11 +54,6 @@ project('client') {
     eclipse.project.name = 'gs-yarn-uimodel-client'
     dependencies {
         compile("org.springframework.data:spring-yarn-boot-cli:2.1.0.BUILD-SNAPSHOT")
-        //compile("args4j:args4j:2.0.28")
-        //compile("org.springframework.boot:spring-boot-cli:1.1.0.RELEASE")
-        //compile("org.springframework.boot:spring-boot-starter-web:1.1.0.RELEASE") {
-        //    exclude group:'ch.qos.logback'
-        //}
     }
     jar {
         appendix = 'client'
@@ -91,10 +86,24 @@ project('appmaster') {
     }
 }
 
-project('container') {
-    eclipse.project.name = 'gs-yarn-uimodel-container'
+project('cont1') {
+    eclipse.project.name = 'gs-yarn-uimodel-cont1'
     jar {
-        appendix = 'container'
+        appendix = 'cont1'
+    }
+}
+
+project('cont2') {
+    eclipse.project.name = 'gs-yarn-uimodel-cont2'
+    jar {
+        appendix = 'cont2'
+    }
+}
+
+project('cont3') {
+    eclipse.project.name = 'gs-yarn-uimodel-cont3'
+    jar {
+        appendix = 'cont3'
     }
 }
 
