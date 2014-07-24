@@ -18,7 +18,11 @@ spring:
             keepContextAlive: true
             containercluster:
               ? cluster1
-              : ? resource
+              : projectionType: hosts
+                projectionHosts:
+                    node3: 1
+                    node4: 1
+                ? resource
                 : priority: 1
                   memory: 64
                   virtualCores: 1
@@ -40,7 +44,9 @@ spring:
                 : patterns:
                     - "*cont2*jar"
               ? cluster3
-              : ? resource
+              : projectionType: any
+                projectionAny: 1
+                ? resource
                 : priority: 3
                   memory: 64
                   virtualCores: 1
