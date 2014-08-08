@@ -7,6 +7,8 @@ spring:
     hadoop:
         fsUri: hdfs://node1:8020
         resourceManagerHost: node1
+        config:
+            topology.script.file.name: /usr/local/hadoops/topology.sh
     yarn:
         appType: BOOT
         appName: gs-yarn-uimodel
@@ -17,45 +19,49 @@ spring:
             containerCount: 1
             keepContextAlive: true
             containercluster:
-              ? cluster1
-              : projectionType: hosts
-                projectionHosts:
-                    node3: 1
-                    node4: 1
-                ? resource
-                : priority: 1
-                  memory: 64
-                  virtualCores: 1
-                ? launchcontext
-                : locality: true
-                  archiveFile: gs-yarn-uimodel-cont1-0.1.0.jar
-                ? localizer
-                : patterns:
-                    - "*cont1*jar"
-              ? cluster2
-              : ? resource
-                : priority: 2
-                  memory: 64
-                  virtualCores: 1
-                ? launchcontext
-                : locality: true
-                  archiveFile: gs-yarn-uimodel-cont2-0.1.0.jar
-                ? localizer
-                : patterns:
-                    - "*cont2*jar"
-              ? cluster3
-              : projectionType: any
-                projectionAny: 1
-                ? resource
-                : priority: 3
-                  memory: 64
-                  virtualCores: 1
-                ? launchcontext
-                : locality: false
-                  archiveFile: gs-yarn-uimodel-cont3-0.1.0.jar
-                ? localizer
-                : patterns:
-                    - "*cont3*jar"
+                enabled: true
+                clusters:
+                    cluster1:
+                        projectionType: hosts
+                        projectionHosts:
+                            node3: 1
+                            node4: 1
+                        resource:
+                            priority: 1
+                            memory: 64
+                            virtualCores: 1
+                        launchcontext:
+                            locality: true
+                            archiveFile: gs-yarn-uimodel-cont1-0.1.0.jar
+                        localizer:
+                            patterns:
+                                - "*cont1*jar"
+                    cluster2:
+                        resource:
+                            priority: 2
+                            memory: 64
+                            virtualCores: 1
+                        launchcontext:
+                            locality: true
+                            archiveFile: gs-yarn-uimodel-cont2-0.1.0.jar
+                            arguments:
+                                -Dmy.custom.property: "mycustomproperty"
+                        localizer:
+                            patterns:
+                                - "*cont2*jar"
+                    cluster3:
+                        projectionType: any
+                        projectionAny: 1
+                        resource:
+                            priority: 3
+                            memory: 64
+                            virtualCores: 1
+                        launchcontext:
+                            locality: false
+                            archiveFile: gs-yarn-uimodel-cont3-0.1.0.jar
+                        localizer:
+                            patterns:
+                                - "*cont3*jar"
         endpoints:
             containercluster:
                 enabled: true

@@ -1,9 +1,0 @@
-<?xml version="1.0"?>
-<configuration>
-
-  <property>
-    <name>topology.script.file.name</name>
-    <value>/usr/local/hadoops/topology.sh</value>
-  </property>
-
-</configuration>
