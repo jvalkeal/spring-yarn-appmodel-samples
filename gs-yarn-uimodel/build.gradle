@@ -107,6 +107,29 @@ project('cont3') {
     }
 }
 
+project('rabbit-producer') {
+    eclipse.project.name = 'gs-yarn-uimodel-rabbit-producer'
+    dependencies {
+        compile("org.springframework.boot:spring-boot-starter-amqp") {
+            exclude group:'ch.qos.logback'
+        }
+    }
+    jar {
+        appendix = 'rabbit-producer'
+    }
+}
+
+project('rabbit-consumer') {
+    eclipse.project.name = 'gs-yarn-uimodel-rabbit-consumer'
+    dependencies {
+        compile("org.springframework.boot:spring-boot-starter-amqp") {
+            exclude group:'ch.qos.logback'
+        }
+    }
+    jar {
+        appendix = 'rabbit-consumer'
+    }
+}
 
 task wrapper(type: Wrapper) {
     gradleVersion = '1.11'

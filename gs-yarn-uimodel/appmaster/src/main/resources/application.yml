@@ -22,8 +22,8 @@ spring:
                 enabled: true
                 clusters:
                     cluster1:
-                        projectionType: hosts
-                        projectionHosts:
+                        xprojectionType: hosts
+                        xprojectionHosts:
                             node3: 1
                             node4: 1
                         resource:
@@ -44,14 +44,12 @@ spring:
                         launchcontext:
                             locality: true
                             archiveFile: gs-yarn-uimodel-cont2-0.1.0.jar
-                            arguments:
-                                -Dmy.custom.property: "mycustomproperty"
                         localizer:
                             patterns:
                                 - "*cont2*jar"
                     cluster3:
-                        projectionType: any
-                        projectionAny: 1
+                        xprojectionType: any
+                        xprojectionAny: 1
                         resource:
                             priority: 3
                             memory: 64
@@ -62,6 +60,32 @@ spring:
                         localizer:
                             patterns:
                                 - "*cont3*jar"
+                    cluster4:
+                        projectionType: any
+                        projectionAny: 1
+                        resource:
+                            priority: 4
+                            memory: 64
+                            virtualCores: 1
+                        launchcontext:
+                            locality: false
+                            archiveFile: gs-yarn-uimodel-rabbit-producer-0.1.0.jar
+                        localizer:
+                            patterns:
+                                - "*rabbit-producer*jar"
+                    cluster5:
+                        projectionType: any
+                        projectionAny: 1
+                        resource:
+                            priority: 5
+                            memory: 64
+                            virtualCores: 1
+                        launchcontext:
+                            locality: false
+                            archiveFile: gs-yarn-uimodel-rabbit-consumer-0.1.0.jar
+                        localizer:
+                            patterns:
+                                - "*rabbit-consumer*jar"
         endpoints:
             containercluster:
                 enabled: true
