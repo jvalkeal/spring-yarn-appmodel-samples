@@ -16,7 +16,6 @@ spring:
         applicationDir: /app/gs-yarn-uimodel/
         appmaster:
             appmasterClass: org.springframework.yarn.am.cluster.ManagedContainerClusterAppmaster
-            containerCount: 1
             keepContextAlive: true
             containercluster:
                 enabled: true

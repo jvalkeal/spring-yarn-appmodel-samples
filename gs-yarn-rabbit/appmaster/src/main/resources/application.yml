@@ -1,0 +1,51 @@
+server:
+    port: 0
+http:
+    mappers:
+        jsonPrettyPrint: true
+spring:
+    hadoop:
+        fsUri: hdfs://node1:8020
+        resourceManagerHost: node1
+        config:
+            topology.script.file.name: /usr/local/hadoops/topology.sh
+    yarn:
+        appType: BOOT
+        appName: gs-yarn-rabbit
+        applicationBaseDir: /app/
+        applicationDir: /app/gs-yarn-rabbit/
+        appmaster:
+            appmasterClass: org.springframework.yarn.am.cluster.ManagedContainerClusterAppmaster
+            keepContextAlive: true
+            containercluster:
+                enabled: true
+                clusters:
+                    producer:
+                        projectionType: any
+                        projectionAny: 1
+                        resource:
+                            priority: 4
+                            memory: 64
+                            virtualCores: 1
+                        launchcontext:
+                            locality: false
+                            archiveFile: gs-yarn-rabbit-cont-producer-0.1.0.jar
+                        localizer:
+                            patterns:
+                                - "*cont-producer*jar"
+                    consumer:
+                        projectionType: any
+                        projectionAny: 1
+                        resource:
+                            priority: 5
+                            memory: 64
+                            virtualCores: 1
+                        launchcontext:
+                            locality: false
+                            archiveFile: gs-yarn-rabbit-cont-consumer-0.1.0.jar
+                        localizer:
+                            patterns:
+                                - "*cont-consumer*jar"
+        endpoints:
+            containercluster:
+                enabled: true
