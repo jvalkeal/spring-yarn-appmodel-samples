@@ -4,6 +4,11 @@ http:
     mappers:
         jsonPrettyPrint: true
 spring:
+    rabbitmq:
+        addresses: node1:5672
+        username: guest
+        password: guest
+        virtual_host: /
     hadoop:
         fsUri: hdfs://node1:8020
         resourceManagerHost: node1
@@ -24,8 +29,8 @@ spring:
                         projectionType: any
                         projectionAny: 1
                         resource:
-                            priority: 4
-                            memory: 64
+                            priority: 1
+                            memory: 256
                             virtualCores: 1
                         launchcontext:
                             locality: false
@@ -37,8 +42,8 @@ spring:
                         projectionType: any
                         projectionAny: 1
                         resource:
-                            priority: 5
-                            memory: 64
+                            priority: 2
+                            memory: 256
                             virtualCores: 1
                         launchcontext:
                             locality: false

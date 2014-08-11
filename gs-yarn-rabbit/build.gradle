@@ -72,6 +72,11 @@ project('appmaster') {
         compile("org.springframework.boot:spring-boot-starter-actuator:1.1.0.RELEASE") {
             exclude group:'ch.qos.logback'
         }
+        compile("org.springframework.boot:spring-boot-starter-thymeleaf:1.1.0.RELEASE") {
+            exclude group:'ch.qos.logback'
+        }
+        compile("commons-codec:commons-codec:1.9")
+        compile ("com.jayway.jsonpath:json-path-assert:0.8.1")
         runtime("org.springframework.plugin:spring-plugin-core:1.1.0.RELEASE")
         testCompile("org.mockito:mockito-core:1.9.5") { dep ->
             exclude group: "org.hamcrest"
