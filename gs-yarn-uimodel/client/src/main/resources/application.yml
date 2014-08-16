@@ -15,8 +15,6 @@ spring:
               - "file:build/libs/gs-yarn-uimodel-cont1-0.1.0.jar"
               - "file:build/libs/gs-yarn-uimodel-cont2-0.1.0.jar"
               - "file:build/libs/gs-yarn-uimodel-cont3-0.1.0.jar"
-              - "file:build/libs/gs-yarn-uimodel-rabbit-producer-0.1.0.jar"
-              - "file:build/libs/gs-yarn-uimodel-rabbit-consumer-0.1.0.jar"
               - "file:build/libs/gs-yarn-uimodel-appmaster-0.1.0.jar"
             launchcontext:
                 archiveFile: gs-yarn-uimodel-appmaster-0.1.0.jar

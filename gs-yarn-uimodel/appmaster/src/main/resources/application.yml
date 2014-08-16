@@ -59,32 +59,6 @@ spring:
                         localizer:
                             patterns:
                                 - "*cont3*jar"
-                    cluster4:
-                        projectionType: any
-                        projectionAny: 1
-                        resource:
-                            priority: 4
-                            memory: 64
-                            virtualCores: 1
-                        launchcontext:
-                            locality: false
-                            archiveFile: gs-yarn-uimodel-rabbit-producer-0.1.0.jar
-                        localizer:
-                            patterns:
-                                - "*rabbit-producer*jar"
-                    cluster5:
-                        projectionType: any
-                        projectionAny: 1
-                        resource:
-                            priority: 5
-                            memory: 64
-                            virtualCores: 1
-                        launchcontext:
-                            locality: false
-                            archiveFile: gs-yarn-uimodel-rabbit-consumer-0.1.0.jar
-                        localizer:
-                            patterns:
-                                - "*rabbit-consumer*jar"
         endpoints:
             containercluster:
                 enabled: true
