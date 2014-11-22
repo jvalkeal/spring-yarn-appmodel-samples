@@ -21,23 +21,27 @@ spring:
                 enabled: true
                 clusters:
                     cluster1:
-                        xprojectionType: hosts
-                        xprojectionHosts:
-                            node3: 1
-                            node4: 1
+                        xprojection:
+                            type: default
+                            data:
+                                any: 1
+                                hosts:
+                                    node5: 1
+                                racks:
+                                    /rack1: 2
                         resource:
-                            priority: 1
+                            priority: 10
                             memory: 64
                             virtualCores: 1
                         launchcontext:
-                            locality: true
+                            locality: false
                             archiveFile: gs-yarn-uimodel-cont1-0.1.0.jar
                         localizer:
                             patterns:
                                 - "*cont1*jar"
                     cluster2:
                         resource:
-                            priority: 2
+                            priority: 20
                             memory: 64
                             virtualCores: 1
                         launchcontext:
@@ -47,10 +51,8 @@ spring:
                             patterns:
                                 - "*cont2*jar"
                     cluster3:
-                        xprojectionType: any
-                        xprojectionAny: 1
                         resource:
-                            priority: 3
+                            priority: 30
                             memory: 64
                             virtualCores: 1
                         launchcontext:

@@ -3,7 +3,7 @@ buildscript {
         maven { url "http://repo.spring.io/libs-milestone" }
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.2.0.RC1")
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.2.0.RC2")
     }
 }
 
@@ -36,7 +36,7 @@ subprojects { subproject ->
     }
 
     jar {
-        baseName = 'gs-yarn-uimodel'
+        baseName = 'gs-yarn-store'
     }
 
     task copyJars(type: Copy) {
@@ -51,7 +51,7 @@ subprojects { subproject ->
 }
 
 project('client') {
-    eclipse.project.name = 'gs-yarn-uimodel-client'
+    eclipse.project.name = 'gs-yarn-store-client'
     dependencies {
         compile("org.springframework.data:spring-yarn-boot-cli:2.1.0.BUILD-SNAPSHOT")
     }
@@ -61,15 +61,15 @@ project('client') {
 }
 
 project('appmaster') {
-    eclipse.project.name = 'gs-yarn-uimodel-appmaster'
+    eclipse.project.name = 'gs-yarn-store-appmaster'
     configurations.all {
         exclude group: 'javax.servlet', module: 'servlet-api', version: '2.5'
     }
     dependencies {
-        compile("org.springframework.boot:spring-boot-starter-web:1.2.0.RC1") {
+        compile("org.springframework.boot:spring-boot-starter-web:1.2.0.RC2") {
             exclude group:'ch.qos.logback'
         }
-        compile("org.springframework.boot:spring-boot-starter-actuator:1.2.0.RC1") {
+        compile("org.springframework.boot:spring-boot-starter-actuator:1.2.0.RC2") {
             exclude group:'ch.qos.logback'
         }
         runtime("org.springframework.plugin:spring-plugin-core:1.1.0.RELEASE")
@@ -79,24 +79,13 @@ project('appmaster') {
     }
 }
 
-project('cont1') {
-    eclipse.project.name = 'gs-yarn-uimodel-cont1'
-    jar {
-        appendix = 'cont1'
+project('container') {
+    eclipse.project.name = 'gs-yarn-store-container'
+    dependencies {
+        compile("org.springframework.data:spring-data-hadoop-store:2.1.0.BUILD-SNAPSHOT")
     }
-}
-
-project('cont2') {
-    eclipse.project.name = 'gs-yarn-uimodel-cont2'
     jar {
-        appendix = 'cont2'
-    }
-}
-
-project('cont3') {
-    eclipse.project.name = 'gs-yarn-uimodel-cont3'
-    jar {
-        appendix = 'cont3'
+        appendix = 'container'
     }
 }
 

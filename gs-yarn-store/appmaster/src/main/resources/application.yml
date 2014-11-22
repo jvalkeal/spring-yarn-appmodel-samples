@@ -1,0 +1,34 @@
+server:
+    port: 0
+spring:
+    hadoop:
+        fsUri: hdfs://node1:8020
+        resourceManagerHost: node1
+        config:
+            topology.script.file.name: /usr/local/hadoops/topology.sh
+    yarn:
+        appType: BOOT
+        appName: gs-yarn-store
+        applicationBaseDir: /app/
+        applicationDir: /app/gs-yarn-store/
+        appmaster:
+            appmasterClass: org.springframework.yarn.am.cluster.ManagedContainerClusterAppmaster
+            keepContextAlive: true
+            containercluster:
+                enabled: true
+                clusters:
+                    cluster1:
+                        projection:
+                            type: default
+                            data:
+                                any: 1
+                        resource:
+                            priority: 10
+                            memory: 64
+                            virtualCores: 1
+                        launchcontext:
+                            locality: false
+                            archiveFile: gs-yarn-store-container-0.1.0.jar
+        endpoints:
+            containercluster:
+                enabled: true

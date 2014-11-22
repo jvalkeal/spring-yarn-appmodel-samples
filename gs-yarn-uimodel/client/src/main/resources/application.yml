@@ -18,3 +18,5 @@ spring:
               - "file:build/libs/gs-yarn-uimodel-appmaster-0.1.0.jar"
             launchcontext:
                 archiveFile: gs-yarn-uimodel-appmaster-0.1.0.jar
+            resource:
+                memory: 1g

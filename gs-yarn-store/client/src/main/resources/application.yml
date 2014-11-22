@@ -1,0 +1,20 @@
+spring:
+    main:
+        show_banner: false
+    hadoop:
+        fsUri: hdfs://node1:8020
+        resourceManagerHost: node1
+    yarn:
+        appType: BOOT
+        appName: gs-yarn-store
+        applicationBaseDir: /app/
+        applicationDir: /app/gs-yarn-store/
+        client:
+            clientClass: org.springframework.yarn.client.DefaultApplicationYarnClient
+            files:
+              - "file:build/libs/gs-yarn-store-container-0.1.0.jar"
+              - "file:build/libs/gs-yarn-store-appmaster-0.1.0.jar"
+            launchcontext:
+                archiveFile: gs-yarn-store-appmaster-0.1.0.jar
+            resource:
+                memory: 1g
