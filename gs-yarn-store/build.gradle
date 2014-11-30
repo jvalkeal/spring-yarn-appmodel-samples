@@ -82,6 +82,12 @@ project('appmaster') {
 project('container') {
     eclipse.project.name = 'gs-yarn-store-container'
     dependencies {
+        compile("org.springframework.boot:spring-boot-starter-web:1.2.0.RC2") {
+            exclude group:'ch.qos.logback'
+        }
+        compile("org.springframework.boot:spring-boot-starter-actuator:1.2.0.RC2") {
+            exclude group:'ch.qos.logback'
+        }
         compile("org.springframework.data:spring-data-hadoop-store:2.1.0.BUILD-SNAPSHOT")
     }
     jar {

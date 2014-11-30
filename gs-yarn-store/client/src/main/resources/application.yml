@@ -2,8 +2,8 @@ spring:
     main:
         show_banner: false
     hadoop:
-        fsUri: hdfs://node1:8020
-        resourceManagerHost: node1
+        fsUri: hdfs://localhost:8020
+        resourceManagerHost: localhost
     yarn:
         appType: BOOT
         appName: gs-yarn-store
