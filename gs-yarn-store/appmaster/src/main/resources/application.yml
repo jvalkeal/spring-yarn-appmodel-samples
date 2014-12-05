@@ -24,7 +24,7 @@ spring:
                         projection:
                             type: default
                             data:
-                                any: 1
+                                any: 3
                         resource:
                             priority: 10
                             memory: 64

@@ -1,8 +1,13 @@
 package hello.container;
 
+import java.util.Date;
+import java.util.Map;
+import java.util.concurrent.FutureTask;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerInitializedEvent;
@@ -10,12 +15,21 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.hadoop.store.PartitionDataStoreWriter;
+import org.springframework.data.hadoop.store.config.annotation.EnableDataStoreTextWriter;
+import org.springframework.data.hadoop.store.config.annotation.SpringDataStoreTextWriterConfigurerAdapter;
+import org.springframework.data.hadoop.store.config.annotation.builders.DataStoreTextWriterConfigurer;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.util.concurrent.SettableListenableFuture;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.yarn.annotation.OnContainerStart;
 import org.springframework.yarn.annotation.YarnComponent;
-import org.springframework.yarn.boot.actuate.endpoint.mvc.domain.ContainerRegisterRequest;
+import org.springframework.yarn.boot.actuate.endpoint.mvc.domain.ContainerRegisterResource;
 import org.springframework.yarn.container.YarnContainerSupport;
+import org.springframework.yarn.event.LoggingListener;
 import org.springframework.yarn.support.NetworkUtils;
 
 @SpringBootApplication
@@ -23,6 +37,11 @@ import org.springframework.yarn.support.NetworkUtils;
 public class ContainerApplication implements ApplicationListener<ApplicationEvent> {
 
 	private static final Log log = LogFactory.getLog(ContainerApplication.class);
+
+	@Bean
+	public LoggingListener loggingListener() {
+		return new LoggingListener("info");
+	}
 
 	// SHDP_AMSERVICE_TRACKURL
 	@Autowired
@@ -44,25 +63,6 @@ public class ContainerApplication implements ApplicationListener<ApplicationEven
 
 	}
 
-
-//	@YarnComponent
-//	static class RegisterComponent extends YarnContainerSupport {
-//
-//		@Autowired
-//		EnvProperties envProperties;
-//
-//		@OnContainerStart
-//		@Order(Ordered.HIGHEST_PRECEDENCE)
-//		public void register() {
-//			RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
-//			ContainerRegisterRequest request = new ContainerRegisterRequest(envProperties.containerId, "jeejee");
-//			restTemplate.postForObject(envProperties.trackUrl + "/yarn_containerregister", request, Object.class);
-//		}
-//
-//	}
-
-
-
 	@Override
 	public void onApplicationEvent(ApplicationEvent event) {
 		log.info("XXXX onApplicationEvent event=" + event);
@@ -74,7 +74,7 @@ public class ContainerApplication implements ApplicationListener<ApplicationEven
 
 			RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
 			String trackUrl = "http://" + NetworkUtils.getDefaultAddress() + ":" + port;
-			ContainerRegisterRequest request = new ContainerRegisterRequest(envProperties.containerId, trackUrl);
+			ContainerRegisterResource request = new ContainerRegisterResource(envProperties.containerId, trackUrl);
 			restTemplate.postForObject(envProperties.trackUrl + "/yarn_containerregister", request, Object.class);
 
 		}
@@ -94,21 +94,24 @@ public class ContainerApplication implements ApplicationListener<ApplicationEven
 	static class HdfsStoreWriter extends YarnContainerSupport {
 
 
-		@OnContainerStart
-		public void justWaitHere() throws Exception {
-			for (int i = 0; i<1000; i++) {
-				log.info("Hello sleeping " + i);
-				Thread.sleep(1000);
-			}
-		}
+//		@OnContainerStart
+//		public void justWaitHere() throws Exception {
+//			for (int i = 0; i<1000; i++) {
+//				log.info("Hello sleeping " + i);
+//				Thread.sleep(1000);
+//			}
+//		}
 
 //		@Autowired
-//		@Qualifier("writer1")
-//		private PartitionDataStoreWriter<String, Map<String, Object>> writer1;
-//
-//		@Autowired
-//		@Qualifier("writer2")
-//		private PartitionDataStoreWriter<String, Map<String, Object>> writer2;
+//		private PartitionDataStoreWriter<String, Map<String, Object>> writer;
+
+		@Autowired
+		@Qualifier("writer1")
+		private PartitionDataStoreWriter<String, Map<String, Object>> writer1;
+
+		@Autowired
+		@Qualifier("writer2")
+		private PartitionDataStoreWriter<String, Map<String, Object>> writer2;
 
 //		@OnContainerStart
 //		public ScheduledFuture<?> writeToHdfs() throws Exception {
@@ -135,59 +138,63 @@ public class ContainerApplication implements ApplicationListener<ApplicationEven
 //			}, null), new Date());
 //		}
 
-//		@OnContainerStart
-//		public ListenableFuture<?> writer1() throws Exception {
-//			final MyFuture myFuture = new MyFuture();
-//			getTaskScheduler().schedule(new FutureTask<Void>(new Runnable() {
-//				@Override
-//				public void run() {
-//					try {
-//						while(!myFuture.interrupted) {
-//							for (int i = 0; i < 1000000; i++) {
-//								writer1.write(Integer.toString(i));
-//							}
-//							Thread.sleep(1000);
-//						}
-//					} catch (Exception e) {
-//						log.error("Error in writing",e);
-//					} finally {
+		@OnContainerStart
+		public ListenableFuture<?> writer1() throws Exception {
+			final MyFuture myFuture = new MyFuture();
+			getTaskScheduler().schedule(new FutureTask<Void>(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						while(!myFuture.interrupted) {
+							for (int i = 0; i < 1000000; i++) {
+								writer1.write(Integer.toString(i));
+							}
+							Thread.sleep(1000);
+						}
+					} catch (Exception e) {
+						myFuture.set(false);
+						log.error("Error in writing",e);
+					}
+//					finally {
 //						try {
 //							writer1.close();
 //						} catch (IOException e) {
 //							log.warn("Error in close",e);
 //						}
 //					}
-//				}
-//			}, null), new Date());
-//			return myFuture;
-//		}
+				}
+			}, null), new Date());
+			return myFuture;
+		}
 
-//		@OnContainerStart
-//		public ListenableFuture<?> writer2() throws Exception {
-//			final MyFuture myFuture = new MyFuture();
-//			getTaskScheduler().schedule(new FutureTask<Void>(new Runnable() {
-//				@Override
-//				public void run() {
-//					try {
-//						while(!myFuture.interrupted) {
-//							for (int i = 0; i < 1000000; i++) {
-//								writer2.write(Integer.toString(i));
-//							}
-//							Thread.sleep(1000);
-//						}
-//					} catch (Exception e) {
-//						log.error("Error in writing",e);
-//					} finally {
+		@OnContainerStart
+		public ListenableFuture<?> writer2() throws Exception {
+			final MyFuture myFuture = new MyFuture();
+			getTaskScheduler().schedule(new FutureTask<Void>(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						while(!myFuture.interrupted) {
+							for (int i = 0; i < 1000000; i++) {
+								writer2.write(Integer.toString(i));
+							}
+							Thread.sleep(1000);
+						}
+					} catch (Exception e) {
+						myFuture.set(true);
+						log.error("Error in writing",e);
+					}
+//					finally {
 //						try {
 //							writer2.close();
 //						} catch (IOException e) {
 //							log.warn("Error in close",e);
 //						}
 //					}
-//				}
-//			}, null), new Date());
-//			return myFuture;
-//		}
+				}
+			}, null), new Date());
+			return myFuture;
+		}
 
 //		@OnContainerStart
 //		public ListenableFuture<Boolean> writeToHdfs() throws Exception {
@@ -280,16 +287,16 @@ public class ContainerApplication implements ApplicationListener<ApplicationEven
 	}
 
 
-//	static class MyFuture extends SettableListenableFuture<Boolean> {
-//
-//		boolean interrupted = false;
-//
-//		@Override
-//		protected void interruptTask() {
-//			interrupted = true;
-//			HdfsStoreWriter.log.info("interruptTask");
-//		}
-//	}
+	static class MyFuture extends SettableListenableFuture<Boolean> {
+
+		boolean interrupted = false;
+
+		@Override
+		protected void interruptTask() {
+			interrupted = true;
+			log.info("interruptTask");
+		}
+	}
 
 //	@Configuration
 //	@EnableDataStoreTextWriter
@@ -315,53 +322,53 @@ public class ContainerApplication implements ApplicationListener<ApplicationEven
 //		}
 //	}
 
-//	@Configuration
-//	@EnableDataStoreTextWriter(name="writer1")
-//	static class Config1 extends SpringDataStoreTextWriterConfigurerAdapter {
-//
-//		@Override
-//		public void configure(DataStoreTextWriterConfigurer config) throws Exception {
-//			config
-//				.basePath("/tmp/store/HdfsStoreWriter1")
-//				.idleTimeout(60000)
-//				.inWritingSuffix(".tmp")
-//				.withPartitionStrategy()
-//					.map("dateFormat('yyyy/MM/dd/HH/mm', timestamp)")
-//					.and()
-//				.withNamingStrategy()
-//					.name("data")
-//					.uuid()
-//					.rolling()
-//					.name("txt", ".")
-//					.and()
-//				.withRolloverStrategy()
-//					.size("1M");
-//		}
-//	}
+	@Configuration
+	@EnableDataStoreTextWriter(name="writer1")
+	static class Config1 extends SpringDataStoreTextWriterConfigurerAdapter {
 
-//	@Configuration
-//	@EnableDataStoreTextWriter(name="writer2")
-//	static class Config2 extends SpringDataStoreTextWriterConfigurerAdapter {
-//
-//		@Override
-//		public void configure(DataStoreTextWriterConfigurer config) throws Exception {
-//			config
-//				.basePath("/tmp/store/HdfsStoreWriter2")
-//				.idleTimeout(60000)
-//				.inWritingSuffix(".tmp")
-//				.withPartitionStrategy()
-//					.map("dateFormat('yyyy/MM/dd/HH/mm', timestamp)")
-//					.and()
-//				.withNamingStrategy()
-//					.name("data")
-//					.uuid()
-//					.rolling()
-//					.name("txt", ".")
-//					.and()
-//				.withRolloverStrategy()
-//					.size("1M");
-//		}
-//	}
+		@Override
+		public void configure(DataStoreTextWriterConfigurer config) throws Exception {
+			config
+				.basePath("/tmp/store/HdfsStoreWriter1")
+				.idleTimeout(60000)
+				.inWritingSuffix(".tmp")
+				.withPartitionStrategy()
+					.map("dateFormat('yyyy/MM/dd/HH/mm', timestamp)")
+					.and()
+				.withNamingStrategy()
+					.name("data")
+					.uuid()
+					.rolling()
+					.name("txt", ".")
+					.and()
+				.withRolloverStrategy()
+					.size("1M");
+		}
+	}
+
+	@Configuration
+	@EnableDataStoreTextWriter(name="writer2")
+	static class Config2 extends SpringDataStoreTextWriterConfigurerAdapter {
+
+		@Override
+		public void configure(DataStoreTextWriterConfigurer config) throws Exception {
+			config
+				.basePath("/tmp/store/HdfsStoreWriter2")
+				.idleTimeout(60000)
+				.inWritingSuffix(".tmp")
+				.withPartitionStrategy()
+					.map("dateFormat('yyyy/MM/dd/HH/mm', timestamp)")
+					.and()
+				.withNamingStrategy()
+					.name("data")
+					.uuid()
+					.rolling()
+					.name("txt", ".")
+					.and()
+				.withRolloverStrategy()
+					.size("1M");
+		}
+	}
 
 	public static void main(String[] args) {
 		SpringApplication.run(ContainerApplication.class, args);
