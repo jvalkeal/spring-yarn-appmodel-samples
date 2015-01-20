@@ -7,8 +7,8 @@ spring:
     yarn:
         appType: BOOT
         appName: gs-yarn-uimodel
-        applicationBaseDir: /app/
-        applicationDir: /app/gs-yarn-uimodel/
+        applicationBaseDir: /newapps/
+        xapplicationDir: /app/gs-yarn-uimodel/
         client:
             clientClass: org.springframework.yarn.client.DefaultApplicationYarnClient
             files:
@@ -18,5 +18,7 @@ spring:
               - "file:build/libs/gs-yarn-uimodel-appmaster-0.1.0.jar"
             launchcontext:
                 archiveFile: gs-yarn-uimodel-appmaster-0.1.0.jar
+                arguments:
+                    -Dspring.yarn.applicationBaseDir: "${spring.yarn.applicationBaseDir}"
             resource:
                 memory: 1g

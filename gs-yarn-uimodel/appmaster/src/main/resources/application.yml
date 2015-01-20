@@ -13,7 +13,7 @@ spring:
         appType: BOOT
         appName: gs-yarn-uimodel
         applicationBaseDir: /app/
-        applicationDir: /app/gs-yarn-uimodel/
+        xapplicationDir: /app/gs-yarn-uimodel/
         appmaster:
             appmasterClass: org.springframework.yarn.am.cluster.ManagedContainerClusterAppmaster
             keepContextAlive: true
@@ -21,17 +21,13 @@ spring:
                 enabled: true
                 clusters:
                     cluster1:
-                        xprojection:
+                        projection:
                             type: default
                             data:
                                 any: 1
-                                hosts:
-                                    node5: 1
-                                racks:
-                                    /rack1: 2
                         resource:
                             priority: 10
-                            memory: 64
+                            memory: 1g
                             virtualCores: 1
                         launchcontext:
                             locality: false
