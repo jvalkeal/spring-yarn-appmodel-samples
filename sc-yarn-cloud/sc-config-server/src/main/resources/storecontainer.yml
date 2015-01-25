@@ -1,0 +1,9 @@
+server:
+    port: 0
+spring:
+    hadoop:
+        fsUri: hdfs://localhost:8020
+eureka:
+    client:
+        serviceUrl:
+            defaultZone: http://localhost:8761/eureka/
