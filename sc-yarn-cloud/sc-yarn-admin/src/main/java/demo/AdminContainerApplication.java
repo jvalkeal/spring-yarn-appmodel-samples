@@ -1,7 +1,6 @@
 package demo;
 
 import java.util.Date;
-import java.util.Map;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -12,13 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.cluster.leader.event.AbstractLeaderEvent;
-import org.springframework.cloud.cluster.leader.event.LoggingListener;
 import org.springframework.cloud.cluster.leader.event.OnGrantedEvent;
 import org.springframework.cloud.cluster.leader.event.OnRevokedEvent;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.cloud.netflix.hystrix.EnableHystrix;
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.SettableListenableFuture;
@@ -39,52 +36,33 @@ public class AdminContainerApplication {
 	@Autowired
     private Configuration configuration;
 	
-	@Bean
-	public LoggingListener loggingListener() {
-		return new LoggingListener("info");
-	}
-	
 	@YarnComponent
 	public static class StoreContainerWriter extends YarnContainerSupport
 			implements ApplicationListener<AbstractLeaderEvent> {
 		
 		private AtomicBoolean active = new AtomicBoolean();
 		
-//		@Autowired
-//		private RestTemplate restTemplate;
-		
 		@Autowired
-		private StoreIntegration storeIntegration;
+		private HystrixStore storeIntegration;
 		
 		@OnContainerStart
 		public ListenableFuture<?> writer() throws Exception {
 			final WriterFuture future = new WriterFuture();
 
 			getTaskScheduler().schedule(new FutureTask<Void>(new Runnable() {
+
 				@Override
 				public void run() {
 					try {
 						while (!future.interrupted) {
 							if (active.get()) {
-								String entity = "Time is " + System.currentTimeMillis();
-								try {
-									String response = storeIntegration.writeEntity(entity);
-//									String response = restTemplate.postForObject(
-//											"http://storecontainer/store", entity,
-//											String.class);
-									log.info("response from storecontainer is: " + response);								
-								} catch (Exception e) {
-//									log.warn("Error in restTemplate", e);
-									log.warn("Error in hystrix", e);
-								}
-							} else {
-								log.info("Not a leader");
+								storeIntegration.writeEntity("Time is " + System.currentTimeMillis());
 							}
 							Thread.sleep(1000);
 						}
 					} catch (Exception e) {
-//						future.set(false);
-						log.error("Error in writing", e);
+						log.error("Got error for write loop, exiting via future", e);
+						future.set(false);
 					}
 				}
 			}, null), new Date());
@@ -104,18 +82,18 @@ public class AdminContainerApplication {
 	}
 	
 	@Component
-	static class StoreIntegration {
+	static class HystrixStore {
 
 		@Autowired
 		private RestTemplate restTemplate;
 		
-		@HystrixCommand(fallbackMethod = "defaultWriteEntity")
+		@HystrixCommand(fallbackMethod = "fallbackWriteEntity")
 		public String writeEntity(String entity) {
 			restTemplate.postForObject("http://storecontainer/store", entity, String.class);
 			return "ok";
 		}
 
-		public String defaultWriteEntity(String entity) {
+		public String fallbackWriteEntity(String entity) {
 			return "error";
 		}
 	}
