@@ -28,15 +28,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class StoreContainerApplication {
 
 	private static final Log log = LogFactory.getLog(StoreContainerApplication.class);
-	
+
 	@RestController
 	@RequestMapping("/store")
 	static class StoreController {
-		
+
 		@Autowired
 		private PartitionDataStoreWriter<String, Map<String, Object>> writer;
-		
-		
+
 		@RequestMapping(method = RequestMethod.POST)
 		public HttpEntity<Void> write(@RequestBody String entity) {
 			log.info("Trying to write entity: " + entity);
@@ -47,7 +46,7 @@ public class StoreContainerApplication {
 			}
 			return new ResponseEntity<Void>(HttpStatus.OK);
 		}
-		
+
 	}
 
 	@SuppressWarnings("serial")
@@ -59,7 +58,7 @@ public class StoreContainerApplication {
 		}
 
 	}
-	
+
 	@Configuration
 	@EnableDataStoreTextWriter
 	static class StoreConfig extends SpringDataStoreTextWriterConfigurerAdapter {
@@ -84,7 +83,7 @@ public class StoreContainerApplication {
 					.size("1M");
 		}
 	}
-	
+
 	public static void main(String[] args) {
 		SpringApplication.run(StoreContainerApplication.class, args);
 	}
